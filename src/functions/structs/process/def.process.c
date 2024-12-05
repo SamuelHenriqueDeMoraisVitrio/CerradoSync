@@ -6,25 +6,28 @@
 
 
 
-Process *private_new_process(pid_t *process){
+Process *private_new_process(pid_t process, void *stack){
 
-  Process *self;
+  Process *self = malloc(sizeof(Process));
 
   self->process = process;
-  self->stack = (char*)malloc(1024 * 1024);
+  self->stack = stack;
 
   return self;
 }
 
 
 void private_free_process(Process *self){
-  if(!(self != NULL)){
-    return;
+
+  if(self != NULL){
+  
+    if(self->stack != NULL){
+      free(self->stack);
+    }
+    free(self);
+
   }
-  if(self->stack != NULL){
-    free(self->stack);
-    return;
-  }
+  
   return;
 }
 

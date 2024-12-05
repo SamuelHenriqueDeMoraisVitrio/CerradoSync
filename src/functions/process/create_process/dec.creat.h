@@ -5,11 +5,6 @@
 //silver_chain_scope_end
 
 
-
-Process *private_new_process(pid_t process, void *stack);
-
-void private_free_process(Process *self);
-
-
+bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg), void *arg, int *flags);
 
 
