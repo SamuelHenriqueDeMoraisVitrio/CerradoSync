@@ -4,12 +4,12 @@
 #include "../imports/imports.imp.h"
 //silver_chain_scope_end
 
+typedef struct ProcessStruct Process;
 
-
-typedef struct CerradoSynStruct{
-
-} CerradoSyn;
-
+struct ProcessStruct{
+  pid_t *process;
+  void *stack;
+};
 
 
 
