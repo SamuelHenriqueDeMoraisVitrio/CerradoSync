@@ -9,6 +9,7 @@ typedef struct ProcessStruct Process;
 struct ProcessStruct{
   pid_t process;
   void *stack;
+  int size_stack;
 };
 
 

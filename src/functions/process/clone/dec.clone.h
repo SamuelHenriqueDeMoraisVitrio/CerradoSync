@@ -6,10 +6,7 @@
 
 
 
-Process *private_new_process(int size_stack);
-
-void private_free_process(Process *self);
-
+void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags);
 
 
 

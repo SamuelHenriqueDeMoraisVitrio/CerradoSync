@@ -6,7 +6,7 @@
 
 
 int print_name(void *arg){
-  printf("Meu nome é %s", (const char *)arg);
+  printf("Meu nome é %d", getpid());
   return 0;
 }
 
@@ -18,7 +18,8 @@ int main(){
   create_process(main_process, print_name, "samuel", NULL);
 
   for (int i = 0; i < main_process->size_process; i++) {
-      waitpid(main_process->process_list[i].process, NULL, 0);
+    pid_t temp_process = main_process->process_list[i]->process;
+    waitpid(temp_process, NULL, 0);
   }
 
   free_CerradoSyn(main_process);

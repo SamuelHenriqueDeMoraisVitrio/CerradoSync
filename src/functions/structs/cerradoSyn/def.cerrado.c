@@ -9,7 +9,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   self->pid_father = getpid();
 
-  self->process_list = (Process *)malloc(sizeof(Process));
+  self->process_list = malloc(0);
   self->size_process = 0;
 
   char name[strlen(class_name) + 1];

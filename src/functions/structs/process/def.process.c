@@ -6,12 +6,12 @@
 
 
 
-Process *private_new_process(pid_t process, void *stack){
+Process *private_new_process(int size_stack){
 
   Process *self = malloc(sizeof(Process));
 
-  self->process = process;
-  self->stack = stack;
+  self->size_stack = size_stack;
+  self->stack = malloc(self->size_stack);
 
   return self;
 }

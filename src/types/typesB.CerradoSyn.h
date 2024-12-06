@@ -7,7 +7,7 @@
 typedef struct CerradoSynStruct CerradoSyn;
 
 struct CerradoSynStruct{
-  Process *process_list;
+  Process **process_list;
   int pid_father;
   size_t size_process;
   const char *name_class;
