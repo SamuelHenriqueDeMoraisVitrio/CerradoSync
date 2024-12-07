@@ -7,14 +7,18 @@
 
 
 
-bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg), void *arg, int *flags) {
+bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
       return false;
   }
 
+  if(!main_process || !callback){
+    return false;
+  }
+
   Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
 
-  private_clone_process(new_process, function_process, arg, flags);
+  private_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
     private_free_process(new_process);
     return false;
@@ -25,8 +29,6 @@ bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg)
   main_process->process_list = (Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(Process *));
 
   main_process->process_list[main_process->size_process - 1] = new_process;
-
-  printf("\n\t%d\n", main_process->process_list[main_process->size_process - 1]->process);
 
   return true;
 }

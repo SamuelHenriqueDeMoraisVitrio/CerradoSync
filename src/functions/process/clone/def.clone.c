@@ -4,13 +4,27 @@
 #include "../../../imports/imports.dec.h"
 //silver_chain_scope_end
 
+int callback_config(void *arg){
 
-void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags){
+  setbuf(stdout, NULL);
 
-  pid_t pid_process = clone(function, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, NULL);
+  CallbackProcess *stuct_arg = (CallbackProcess *)arg;
+
+  int(*function_callback)(ArgumentsCallback *arguments);
+  function_callback = stuct_arg->function_callback;
+
+  int var_return = function_callback(stuct_arg->args);
+
+  //fflush(stdout);
+
+  return var_return;
+}
+
+void private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+
+  pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
   process->process = pid_process;
-  printf("session:\nsize_stack: %d\nprocess:%d\n", process->size_stack, process->process);
 
 
 }

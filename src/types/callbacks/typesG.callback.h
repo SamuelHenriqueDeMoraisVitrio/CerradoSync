@@ -10,11 +10,8 @@
 typedef struct CallbackProcess_struct CallbackProcess;
 
 struct CallbackProcess_struct{
-
-  int(*function_callback)(ArgumentsCallback *args);
-  int size_arguments;
-  ArgumentsCallback **arguments;
-
+  int(*function_callback)(ArgumentsCallback *arguments);
+  ArgumentsCallback *args;
 };
 
 

@@ -6,7 +6,17 @@
 
 
 
-CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *args), ArgumentsCallback *prymari_arg);
+CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg);
+
+ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
+
+void private_free_argument(ArgumentCallback *self);
+
+void free_callback(CallbackProcess *self);
+
+void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+
+
 
 
 

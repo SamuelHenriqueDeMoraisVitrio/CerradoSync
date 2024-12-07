@@ -5,6 +5,6 @@
 //silver_chain_scope_end
 
 
-bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg), void *arg, int *flags);
+bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags);
 
 

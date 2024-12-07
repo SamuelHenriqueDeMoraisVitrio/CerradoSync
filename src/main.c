@@ -5,8 +5,8 @@
 //silver_chain_scope_end
 
 
-int print_name(void *arg){
-  printf("Meu nome é %d\n", getpid());
+int print_name(ArgumentsCallback *arg){
+  printf("Meu nome é %s", (const char *)arg->arguments[0]->arg);
   return 0;
 }
 
@@ -15,7 +15,12 @@ int main(){
 
   CerradoSyn *main_process = new_CerradoSynStruct("main");
 
-  create_process(main_process, print_name, "samuel", NULL);
+  ArgumentCallback *primary_arg = new_argument("name", "samuel", sizeof("samuel"));
+  CallbackProcess *function_print = new_CallbackProcess(print_name, primary_arg);
+
+  create_process(main_process, function_print, NULL);
+
+  free_callback(function_print);
 
   for (int i = 0; i < main_process->size_process; i++) {
     pid_t temp_process = main_process->process_list[i]->process;

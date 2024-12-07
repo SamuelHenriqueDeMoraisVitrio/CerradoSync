@@ -6,7 +6,7 @@
 
 
 
-void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags);
+void private_clone_process(Process *process, CallbackProcess *callback, int *flags);
 
 
 

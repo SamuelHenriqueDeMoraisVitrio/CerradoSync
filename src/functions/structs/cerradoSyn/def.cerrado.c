@@ -9,7 +9,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   self->pid_father = getpid();
 
-  self->process_list = malloc(0);
+  self->process_list = (Process **)malloc(sizeof(Process *));
   self->size_process = 0;
 
   char name[strlen(class_name) + 1];
@@ -28,8 +28,9 @@ void free_CerradoSyn(CerradoSyn *self){
 
     if(self->process_list != NULL){
       for(int i = 0; i < self->size_process; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
-        if(&(self->process_list[i]) != NULL){
-          //private_free_process(&self->process_list[i]);
+        if(self->process_list[i] != NULL){
+          Process *process_temp = self->process_list[i];
+          private_free_process(process_temp);
         }
       }
       free(self->process_list);
