@@ -6,10 +6,7 @@
 
 
 
-Process *private_new_process(int size_stack);
-
-void private_free_process(Process *self);
-
+CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *args), ArgumentsCallback *prymari_arg);
 
 
 

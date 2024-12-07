@@ -5,7 +5,6 @@
 //silver_chain_scope_end
 
 
-
 void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags){
 
   pid_t pid_process = clone(function, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, NULL);

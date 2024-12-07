@@ -6,7 +6,7 @@
 
 
 int print_name(void *arg){
-  printf("Meu nome é %d", getpid());
+  printf("Meu nome é %d\n", getpid());
   return 0;
 }
 
