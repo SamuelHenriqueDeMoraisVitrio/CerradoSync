@@ -35,8 +35,56 @@
 
 #endif
 
-#ifndef silverchain_typesA
-#define silverchain_typesA
+#ifndef silverchain_typesF
+#define silverchain_typesF
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+typedef struct Arguments_struct ArgumentsCallback;
+typedef struct Argument_struct ArgumentCallback;
+
+struct Arguments_struct{
+  int size_arguments;
+  ArgumentCallback **arguments;
+};
+
+struct Argument_struct{
+  void *arg;
+  const char *name_argument;
+};
+
+
+
+
+
+#endif
+
+#ifndef silverchain_typesG
+#define silverchain_typesG
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+
+typedef struct CallbackProcess_struct CallbackProcess;
+
+struct CallbackProcess_struct{
+  int(*function_callback)(ArgumentsCallback *arguments);
+  ArgumentsCallback *args;
+};
+
+
+
+
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -59,8 +107,8 @@ struct ProcessStruct{
 
 #endif
 
-#ifndef silverchain_typesB
-#define silverchain_typesB
+#ifndef silverchain_typesH
+#define silverchain_typesH
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -96,7 +144,7 @@ struct CerradoSynStruct{
 
 
 
-void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags);
+void private_clone_process(Process *process, CallbackProcess *callback, int *flags);
 
 
 
@@ -108,7 +156,30 @@ void private_clone_process(Process *process, int(*function)(void *arg), void *ar
 //silver_chain_scope_end
 
 
-bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg), void *arg, int *flags);
+bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags);
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg);
+
+ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
+
+void private_free_argument(ArgumentCallback *self);
+
+void free_callback(CallbackProcess *self);
+
+void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+
+
+
 
 
 
@@ -155,14 +226,27 @@ void private_free_process(Process *self);
 
 //silver_chain_scope_end
 
+int callback_config(void *arg){
 
+  setbuf(stdout, NULL);
 
-void private_clone_process(Process *process, int(*function)(void *arg), void *arg, int *flags){
+  CallbackProcess *stuct_arg = (CallbackProcess *)arg;
 
-  pid_t pid_process = clone(function, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, NULL);
+  int(*function_callback)(ArgumentsCallback *arguments);
+  function_callback = stuct_arg->function_callback;
+
+  int var_return = function_callback(stuct_arg->args);
+
+  //fflush(stdout);
+
+  return var_return;
+}
+
+void private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+
+  pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
   process->process = pid_process;
-  printf("session:\nsize_stack: %d\nprocess:%d\n", process->size_stack, process->process);
 
 
 }
@@ -180,14 +264,18 @@ void private_clone_process(Process *process, int(*function)(void *arg), void *ar
 
 
 
-bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg), void *arg, int *flags) {
+bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
       return false;
   }
 
+  if(!main_process || !callback){
+    return false;
+  }
+
   Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
 
-  private_clone_process(new_process, function_process, arg, flags);
+  private_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
     private_free_process(new_process);
     return false;
@@ -199,11 +287,119 @@ bool create_process(CerradoSyn *main_process, int (*function_process)(void *arg)
 
   main_process->process_list[main_process->size_process - 1] = new_process;
 
-  printf("\n\t%d\n", main_process->process_list[main_process->size_process - 1]->process);
-
   return true;
 }
 
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
+
+  if(!callback_self || !add_arg){
+    return;
+  }
+
+  callback_self->args->size_arguments++;
+
+  callback_self->args->arguments = (ArgumentCallback **)realloc(callback_self->args->arguments, callback_self->args->size_arguments + 1);
+  if(callback_self->args->arguments == NULL){
+    callback_self->args->size_arguments--;
+    return;
+  }
+
+  callback_self->args->arguments[callback_self->args->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
+  if(callback_self->args->arguments == NULL){
+    callback_self->args->size_arguments--;
+    return;
+  }
+  
+  callback_self->args->arguments[callback_self->args->size_arguments - 1] = add_arg;
+}
+
+
+ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size){
+
+  if(!name_argument || !arg){
+    return NULL;
+  }
+
+  ArgumentCallback *self = (ArgumentCallback *)malloc(sizeof(ArgumentCallback));
+
+  char name[strlen(name_argument) + 1];
+  strcpy(name, name_argument);
+  self->name_argument = name_argument;
+
+  self->arg = (void *)malloc(arg_size + 1);
+  if(!self->arg){
+    free(self);
+    return NULL;
+  }
+
+  memcpy(self->arg, arg, arg_size);
+
+  return self;
+
+}
+
+void private_free_argument(ArgumentCallback *self){
+  if(self != NULL){
+    if(self->arg != NULL){
+      free(self->arg);
+    }
+    free(self);
+  }
+}
+
+CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg){
+
+  if(!function || !primary_arg){
+    return NULL;
+  }
+
+  CallbackProcess *self = (CallbackProcess *)malloc(sizeof(CallbackProcess));
+
+  self->function_callback = function;
+
+  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
+
+  self->args->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) * 2);
+  self->args->size_arguments = 1;
+  self->args->arguments[0] = (ArgumentCallback *)malloc(sizeof(*primary_arg));
+  self->args->arguments[0] = primary_arg;
+
+  return self;
+
+}
+
+void free_callback(CallbackProcess *self){
+  if(self != NULL){
+
+    if(self->args != NULL){
+
+      if(self->args->arguments != NULL){
+
+        for(int i=0; i < self->args->size_arguments; i++){
+          if(self->args->arguments[i] != NULL){
+            ArgumentCallback *argument = self->args->arguments[i];
+            private_free_argument(argument);
+          }
+        }
+        
+        free(self->args->arguments);
+      }
+      free(self->args);
+    }
+    free(self);
+  }
+}
 
 
 
@@ -219,7 +415,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   self->pid_father = getpid();
 
-  self->process_list = malloc(0);
+  self->process_list = (Process **)malloc(sizeof(Process *));
   self->size_process = 0;
 
   char name[strlen(class_name) + 1];
@@ -238,8 +434,9 @@ void free_CerradoSyn(CerradoSyn *self){
 
     if(self->process_list != NULL){
       for(int i = 0; i < self->size_process; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
-        if(&(self->process_list[i]) != NULL){
-          //private_free_process(&self->process_list[i]);
+        if(self->process_list[i] != NULL){
+          Process *process_temp = self->process_list[i];
+          private_free_process(process_temp);
         }
       }
       free(self->process_list);

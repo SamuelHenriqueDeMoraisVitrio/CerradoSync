@@ -15,12 +15,15 @@ int callback_config(void *arg){
 
   int var_return = function_callback(stuct_arg->args);
 
-  //fflush(stdout);
-
   return var_return;
 }
 
 void private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+
+  if(!process){
+    perror("Error cloning process");
+    exit(EXIT_FAILURE);
+  }
 
   pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
