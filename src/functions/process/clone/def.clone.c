@@ -6,7 +6,6 @@
 
 int callback_config(void *arg){
 
-  setbuf(stdout, NULL);
 
   CallbackProcess *stuct_arg = (CallbackProcess *)arg;
 

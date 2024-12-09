@@ -143,6 +143,19 @@ struct CerradoSynStruct{
 //silver_chain_scope_end
 
 
+int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args);
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
 
 void private_clone_process(Process *process, CallbackProcess *callback, int *flags);
 
@@ -226,9 +239,35 @@ void private_free_process(Process *self);
 
 //silver_chain_scope_end
 
+
+
+int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args){
+
+  if(arg_for_verify != NULL){
+    return 1;
+  }
+
+  for(int i = 0; i < size_args; i++){
+    if((args_for_free[i]) == NULL){
+      free(args_for_free[i]);
+    }
+  }
+
+  return -1;
+}
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
 int callback_config(void *arg){
 
-  setbuf(stdout, NULL);
 
   CallbackProcess *stuct_arg = (CallbackProcess *)arg;
 
@@ -237,12 +276,15 @@ int callback_config(void *arg){
 
   int var_return = function_callback(stuct_arg->args);
 
-  //fflush(stdout);
-
   return var_return;
 }
 
 void private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+
+  if(!process){
+    perror("Error cloning process");
+    exit(EXIT_FAILURE);
+  }
 
   pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
@@ -332,14 +374,19 @@ ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_
   }
 
   ArgumentCallback *self = (ArgumentCallback *)malloc(sizeof(ArgumentCallback));
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
 
-  char name[strlen(name_argument) + 1];
-  strcpy(name, name_argument);
-  self->name_argument = name_argument;
+  self->name_argument = (const char *)malloc(strlen(name_argument) + 1);
+  if(!private_free_interrupted((char *)self->name_argument, (void *[]){self, NULL}, 2)){
+    return NULL;
+  }
+
+  strcpy((char *)self->name_argument, name_argument);
 
   self->arg = (void *)malloc(arg_size + 1);
-  if(!self->arg){
-    free(self);
+  if(!private_free_interrupted(self->arg, (void *[]){(char *)self->name_argument, self}, 2)){
     return NULL;
   }
 
@@ -354,6 +401,9 @@ void private_free_argument(ArgumentCallback *self){
     if(self->arg != NULL){
       free(self->arg);
     }
+    if(self->name_argument != NULL){
+      free((char *)self->name_argument);
+    }
     free(self);
   }
 }
@@ -365,14 +415,29 @@ CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *argument
   }
 
   CallbackProcess *self = (CallbackProcess *)malloc(sizeof(CallbackProcess));
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
 
   self->function_callback = function;
 
-  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
+  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) * 2);
+  if(!private_free_interrupted(self->args, (void *[]){self}, 1)){
+    return NULL;
+  }
 
   self->args->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) * 2);
+  if(!private_free_interrupted(self->args->arguments, (void *[]){self->args, self}, 2)){
+    return NULL;
+  }
+
   self->args->size_arguments = 1;
+
   self->args->arguments[0] = (ArgumentCallback *)malloc(sizeof(*primary_arg));
+  if(!private_free_interrupted(self->args->arguments[0], (void *[]){self->args->arguments, self->args, self}, 3)){
+    return NULL;
+  }
+
   self->args->arguments[0] = primary_arg;
 
   return self;
@@ -386,7 +451,7 @@ void free_callback(CallbackProcess *self){
 
       if(self->args->arguments != NULL){
 
-        for(int i=0; i < self->args->size_arguments; i++){
+        for(int i=0; i < self->args->size_arguments + 1; i++){
           if(self->args->arguments[i] != NULL){
             ArgumentCallback *argument = self->args->arguments[i];
             private_free_argument(argument);
@@ -411,16 +476,34 @@ void free_callback(CallbackProcess *self){
 //silver_chain_scope_end
 
 CerradoSyn *new_CerradoSynStruct(const char *class_name){
+
+  static bool primary_run = true;
+  if(primary_run){
+    setbuf(stdout, NULL);
+  }
+  primary_run = false;
+
   CerradoSyn *self = malloc(sizeof(CerradoSyn));
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
 
   self->pid_father = getpid();
 
-  self->process_list = (Process **)malloc(sizeof(Process *));
+  self->process_list = (Process **)malloc(sizeof(Process *) * 2);
+  if(!private_free_interrupted(self->process_list, (void *[]){self}, 1)){
+    return NULL;
+  }
+
   self->size_process = 0;
 
-  char name[strlen(class_name) + 1];
-  strcpy(name, class_name);
-  self->name_class = name;
+  self->name_class = (const char *)malloc(strlen(class_name) + 1);
+  if(!private_free_interrupted((char *)self->name_class, (void *[]){self->process_list, self}, 2)){
+    return NULL;
+  }
+
+  strcpy((char *)self->name_class, class_name);
+
   self->class_list = NULL;
   
   self->memory = NULL;
@@ -433,13 +516,17 @@ void free_CerradoSyn(CerradoSyn *self){
   if(self != NULL){
 
     if(self->process_list != NULL){
-      for(int i = 0; i < self->size_process; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
+      for(int i = 0; i < self->size_process + 1; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
         if(self->process_list[i] != NULL){
           Process *process_temp = self->process_list[i];
           private_free_process(process_temp);
         }
       }
       free(self->process_list);
+    }
+
+    if(self->name_class != NULL){
+      free((char *)self->name_class);
     }
 
     free(self);
@@ -463,9 +550,15 @@ void free_CerradoSyn(CerradoSyn *self){
 Process *private_new_process(int size_stack){
 
   Process *self = malloc(sizeof(Process));
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
 
   self->size_stack = size_stack;
   self->stack = malloc(self->size_stack);
+  if(!private_free_interrupted(self->stack, (void *[]){self}, 1)){
+    return NULL;
+  }
 
   return self;
 }

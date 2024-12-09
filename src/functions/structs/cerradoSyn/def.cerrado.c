@@ -5,6 +5,13 @@
 //silver_chain_scope_end
 
 CerradoSyn *new_CerradoSynStruct(const char *class_name){
+
+  static bool primary_run = true;
+  if(primary_run){
+    setbuf(stdout, NULL);
+  }
+  primary_run = false;
+
   CerradoSyn *self = malloc(sizeof(CerradoSyn));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
