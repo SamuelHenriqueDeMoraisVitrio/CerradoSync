@@ -1,45 +1,60 @@
 
 #include "../../CerradoSyn.h"
-#include <cstdint>
-#include <sched.h>
+
+#include "dependencies/sha256.h"
+#include "dependencies/sha256.c"
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
-#include "dependencies/sha256.c"
-#include "dependencies/sha256.h"
 
 
 typedef struct Sha_256 Hash;
 
-unsigned long get_key(void *key){
+const char *get_key(const char *key){
+  if(key == NULL){
+    perror("\n\tKey passada incorreta;\n");
+    return 0;
+  }
 
-  pid_t pid_process_self = getpid();
+  short size_pid = 15;
+  long size_key_formated = strlen(key) + size_pid + 3;
 
-  unsigned char pid_process_converted[sizeof(pid_process_self)];
-  memccpy(pid_process_converted, &pid_process_self, sizeof(pid_process_self));
+  char *key_hash = (char *)malloc(size_key_formated);
+  snprintf(key_hash, size_key_formated, "%s-%d", key, getpid());
 
-  Hash sha;
   uint8_t hash[SIZE_OF_SHA_256_HASH];
-  sha_256_init(&sha, hash);
-  pid_t pid_now = getpid();
-  sha_256_write(&sha, , 0);
+  calc_sha_256(hash, key_hash, strlen(key_hash));
+
+  free(key_hash);
   
-  return NULL;
+  char *hash_string = (char*)malloc(SIZE_OF_SHA_256_HASH * 2 + 1);
+  for (unsigned int i = 0; i < SIZE_OF_SHA_256_HASH; i++) {
+      sprintf(hash_string + i * 2, "%02x", hash[i]);
+  }
+
+  return hash_string;
 }
 
 
 
 int main(){
-  
 
-  CerradoSyn *Processo_main = new_CerradoSynStruct("main");
+  const char *class = "Meu nome é samuel henrique de morais vitrio";
+  const char *class2 = "Meu nome é samuel henrique de morais vitrio";
+  const char *key = get_key(class);
+  const char *key2 = get_key(class2);
 
-  //const char *ID = sprintf(ID, "%02X", "main");
-  //ArgumentCallback *argument_id_shared = new_argument("memory_ID", 22, sizeof((void *)22));
+  printf("\n\tkeys:\n%s\n%s\n", key, key2);
 
-  printf("%ld", (long)"main");
+  if(strcmp(key, key2) == 0){
+    printf("\n\tIguais\n\n");
+    return 0;
+  }
+
+  printf("\n\tDiferente\n\n");
 
   return 0;
 }
