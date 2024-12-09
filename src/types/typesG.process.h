@@ -4,7 +4,6 @@
 #include "../imports/imports.typesF.h"
 //silver_chain_scope_end
 
-typedef struct ProcessStruct Process;
 
 struct ProcessStruct{
   pid_t process;

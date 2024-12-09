@@ -22,13 +22,13 @@ const char *get_key(const char *key){
   short size_pid = 15;
   long size_key_formated = strlen(key) + size_pid + 3;
 
-  char *key_hash = (char *)malloc(size_key_formated);
+  char key_hash[size_key_formated]; //= (char *)malloc(size_key_formated);
   snprintf(key_hash, size_key_formated, "%s-%d", key, getpid());
 
   uint8_t hash[SIZE_OF_SHA_256_HASH];
   calc_sha_256(hash, key_hash, strlen(key_hash));
 
-  free(key_hash);
+  //free(key_hash);
   
   char *hash_string = (char*)malloc(SIZE_OF_SHA_256_HASH * 2 + 1);
   for (unsigned int i = 0; i < SIZE_OF_SHA_256_HASH; i++) {

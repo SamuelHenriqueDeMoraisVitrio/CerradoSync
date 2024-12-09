@@ -1,5 +1,5 @@
-#include "imports.imp.h"
+#include "imports.depH.h"
 #ifndef silverchain_mac
 #define silverchain_mac
-#include "../mac/mac.config.h"
+#include "../macros/mac.config.h"
 #endif

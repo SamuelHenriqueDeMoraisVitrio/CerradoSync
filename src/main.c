@@ -2,75 +2,54 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "imports/imports.def.h"
+#include <string.h>
 //silver_chain_scope_end
 
-#include <stdio.h>
-#include <unistd.h>
 
-int print_name_filho(ArgumentsCallback *args){
 
-  printf("\n\tMeu nome é %s\n", (const char *)args->arguments[0]->arg);
-  sleep(2);
+int second_process(ArgumentsCallback *args){
+
+  const char *key_father = args->arguments[1]->arg;
+  const char *key_son = private_get_key(args->arguments[0]->arg);
+  printf("\n\tkey_son   : %s\n", key_son);
+  printf("\n\tkey_father: %s\n", key_father);
+
+  if(strcmp(key_son, key_father) == 0){
+    printf("\n\tequal\n");
+    return 0;
+  }
+
+  printf("\n\tDiferent\n");
 
   return 0;
-
 }
 
-int print_name(ArgumentsCallback *arg){
-
-  CerradoSyn *process_filho = new_CerradoSynStruct("filho1");
-  CerradoSyn *process_filho2 = new_CerradoSynStruct("filho2");
-
-  ArgumentCallback *primary_argument = new_argument("name", "Danilo", sizeof("Danilo"));
-  CallbackProcess *funcrion_callback_filho = new_CallbackProcess(print_name_filho, primary_argument);
-
-  ArgumentCallback *primary_argument_2 = new_argument("name", "Samuel H", sizeof("Samuel H"));
-  CallbackProcess *function_callback_filho_2 = new_CallbackProcess(print_name_filho, primary_argument_2);
-
-  create_process(process_filho, funcrion_callback_filho, NULL);
-  create_process(process_filho2, function_callback_filho_2, NULL);
-
-  free_callback(funcrion_callback_filho);
-  free_callback(function_callback_filho_2);
-
-  for (int i = 0; i < process_filho->size_process; i++) {
-    pid_t temp_process = process_filho->process_list[i]->process;
-    waitpid(temp_process, NULL, 0);
-  }
-  printf("\n\tFim processos filho filho 1 %d\n", process_filho->process_list[0]->process);
-
-  for (int i = 0; i < process_filho2->size_process; i++) {
-    pid_t temp_process = process_filho2->process_list[i]->process;
-    waitpid(temp_process, NULL, 0);
-  }
-  printf("\n\tFim processos filho filho 2 %d\n", process_filho2->process_list[0]->process);
-
-  printf("\n\tFinal processos filho %d\n", getpid());
-  return 0;
-}
 
 int main(){
+  
+  CerradoSyn *main = new_CerradoSynStruct("samuel");
 
-  CerradoSyn *main_process = new_CerradoSynStruct("main");
+  ArgumentCallback *new_primary_argument = new_argument("class", (char *)main->name_class, strlen(main->name_class));
+  CallbackProcess *callback_main = new_CallbackProcess(second_process, new_primary_argument);
 
-  ArgumentCallback *primary_arg = new_argument("name", "samuel", sizeof("samuel"));
-  CallbackProcess *function_print = new_CallbackProcess(print_name, primary_arg);
+  const char *key_father = private_creat_key(main->name_class);
 
-  create_process(main_process, function_print, NULL);
+  ArgumentCallback *new_second_argument = new_argument("key_father", (char *)key_father, strlen(key_father));
+  add_argument(callback_main, new_second_argument);
 
-  free_callback(function_print);
+  create_process(main, callback_main, NULL);
+  free_callback(callback_main);
 
   printf("\n\tHello Word!\n");
-  for (int i = 0; i < main_process->size_process; i++) {
-    pid_t temp_process = main_process->process_list[i]->process;
+  for (int i = 0; i < main->size_process; i++) {
+    pid_t temp_process = main->process_list[i]->process;
     waitpid(temp_process, NULL, 0);
   }
   printf("\n\tBye Word %d\n", getpid());
 
-  free_CerradoSyn(main_process);
+  free_CerradoSyn(main);
 
   return 0;
 }
-
 
 
