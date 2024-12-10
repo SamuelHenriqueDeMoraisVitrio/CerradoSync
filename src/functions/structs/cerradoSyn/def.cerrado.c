@@ -33,6 +33,8 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   strcpy((char *)self->name_class, class_name);
 
+  self->key = private_creat_key(self->name_class);
+
   self->class_list = NULL;
   
   self->memory = NULL;

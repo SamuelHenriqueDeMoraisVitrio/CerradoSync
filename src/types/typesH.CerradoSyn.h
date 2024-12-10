@@ -8,6 +8,7 @@
 struct CerradoSynStruct{
   int pid_father;
   const char *name_class;
+  key_t key;
 
   Process **process_list;
   size_t size_process;

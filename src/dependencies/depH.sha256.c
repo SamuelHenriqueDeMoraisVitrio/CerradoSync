@@ -1,10 +1,8 @@
 
 //silver_chain_scope_start
 //mannaged by silver chain
-#include "../../imports/imports.depG.h"
+#include "../imports/imports.depG.h"
 //silver_chain_scope_end
-
-#include "sha256.h"
 
 #define TOTAL_LEN_LEN 8
 
