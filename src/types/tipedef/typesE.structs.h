@@ -14,4 +14,6 @@ typedef struct Argument_struct ArgumentCallback;
 
 typedef struct CallbackProcess_struct CallbackProcess;
 
+typedef struct MemoryShared_struct MemoryShared;
+
 

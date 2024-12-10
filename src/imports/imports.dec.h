@@ -7,5 +7,6 @@
 #include "../functions/process/create_process/dec.creat.h"
 #include "../functions/structs/callback/dec.callback.h"
 #include "../functions/structs/cerradoSyn/dec.cerrado.h"
+#include "../functions/structs/memoryshare/dec.memory.h"
 #include "../functions/structs/process/dec.process.h"
 #endif

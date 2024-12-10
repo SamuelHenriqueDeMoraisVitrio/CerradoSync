@@ -7,4 +7,5 @@
 
 typedef struct Sha_256 Hash;
 
+typedef struct shmid_ds ShmidDS;
 

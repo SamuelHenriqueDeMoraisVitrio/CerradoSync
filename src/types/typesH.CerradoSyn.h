@@ -13,7 +13,7 @@ struct CerradoSynStruct{
   Process **process_list;
   size_t size_process;
   
-  void *memory;
+  MemoryShared *memory;
   CerradoSyn *class_list;
 };
 
