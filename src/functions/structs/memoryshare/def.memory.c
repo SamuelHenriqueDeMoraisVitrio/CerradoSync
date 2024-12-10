@@ -27,8 +27,8 @@ MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t siz
   return self;
 }
 
-void *memory_data_attach(int memory_identification){
-  void *data = (void *)shmat(memory_identification, NULL, 0);
+void *private_memory_data_attach(MemoryShared *memory_shared){
+  void *data = (void *)shmat(memory_shared->memory_location, NULL, 0);
   if(data == (void *)-1){
     perror("Error attaching memory");
     return NULL;
@@ -37,20 +37,22 @@ void *memory_data_attach(int memory_identification){
   return data;
 }
 
-void private_close_memory(void *data_memory){
-  shmdt(data_memory);
+void private_close_memory(MemoryShared *memory_shared){
+  shmdt(memory_shared->memory);
 }
 
 void private_delet_memory(MemoryShared *memory_shared){
   private_close_memory(memory_shared->memory);
+
+  shmctl(memory_shared->memory_location, IPC_RMID, NULL);
   if(shmctl(memory_shared->memory_location, IPC_RMID, NULL) == -1){
     perror("Error get stats memory");
   }
 }
 
-ShmidDS *get_info_memory_location(int memory_identification){
+ShmidDS *get_info_memory_location(MemoryShared *memory_shared){
   ShmidDS *shmInfo;
-  if(shmctl(memory_identification, IPC_STAT, shmInfo) == -1){
+  if(shmctl(memory_shared->memory_location, IPC_STAT, shmInfo) == -1){
     perror("Error get stats memory");
     return NULL;
   }

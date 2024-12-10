@@ -70,9 +70,9 @@ void private_free_argument(ArgumentCallback *self){
   }
 }
 
-CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg){
+CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(ArgumentsCallback *arguments)){
 
-  if(!function || !primary_arg){
+  if(!function || !process_father){
     return NULL;
   }
 
@@ -83,7 +83,7 @@ CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *argument
 
   self->function_callback = function;
 
-  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) * 2);
+  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
   if(!private_free_interrupted(self->args, (void *[]){self}, 1)){
     return NULL;
   }
@@ -95,15 +95,12 @@ CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *argument
 
   self->args->size_arguments = 1;
 
-  self->args->arguments[0] = (ArgumentCallback *)malloc(sizeof(*primary_arg));
+  self->args->arguments[0] = new_argument("memory", process_father->memory, sizeof(*process_father->memory));
   if(!private_free_interrupted(self->args->arguments[0], (void *[]){self->args->arguments, self->args, self}, 3)){
     return NULL;
   }
 
-  self->args->arguments[0] = primary_arg;
-
   return self;
-
 }
 
 void free_callback(CallbackProcess *self){

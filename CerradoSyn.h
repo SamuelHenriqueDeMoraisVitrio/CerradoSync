@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 
 
 
@@ -381,9 +383,13 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 
 
-#define _SIZE_STACK_PROCESS_1MB_ 1024 * 1024
+#define _SIZE_STACK_PROCESS_1MB_ 1024 * 1024 // 1mb
 
+#define _DEFAULT_MAX_SIZE_TRAFFIC_ 1024 // 1kb
 
+#define _WRITE_AND_READ_ 0666 // Read and write permission
+
+#define _CONFIG_SHMGET_PERMISSIONS_ _WRITE_AND_READ_ | IPC_CREAT | IPC_EXCL // shmget configuration function
 
 
 #endif
@@ -399,6 +405,7 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 typedef struct Sha_256 Hash;
 
+typedef struct shmid_ds ShmidDS;
 
 
 
@@ -416,6 +423,8 @@ typedef struct Arguments_struct ArgumentsCallback;
 typedef struct Argument_struct ArgumentCallback;
 
 typedef struct CallbackProcess_struct CallbackProcess;
+
+typedef struct MemoryShared_struct MemoryShared;
 
 
 
@@ -474,6 +483,23 @@ struct CallbackProcess_struct{
 //silver_chain_scope_end
 
 
+
+
+struct MemoryShared_struct{
+  void *memory;
+  key_t key;
+  int memory_location;
+};
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
 struct ProcessStruct{
   pid_t process;
   void *stack;
@@ -500,11 +526,12 @@ struct ProcessStruct{
 struct CerradoSynStruct{
   int pid_father;
   const char *name_class;
+  key_t key;
 
   Process **process_list;
   size_t size_process;
   
-  void *memory;
+  MemoryShared *memory;
   CerradoSyn *class_list;
 };
 
@@ -539,11 +566,11 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
 
 
 
-const char *private_generate_string_key(const char *key, pid_t hierarchy);
+key_t private_generate_string_key(const char *key, pid_t hierarchy);
 
-const char *private_creat_key(const char *key);
+key_t private_creat_key(const char *key);
 
-const char *private_get_key(const char *key);
+key_t private_get_key(const char *key);
 
 
 
@@ -604,11 +631,31 @@ void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
 
 
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name);
+CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic);
 
 void free_CerradoSyn(CerradoSyn *self);
 
 
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
+
+void *memory_data_attach(int memory_identification);
+
+void private_close_memory(void *data_memory);
+
+void private_delet_memory(MemoryShared *memory_shared);
+
+ShmidDS *get_info_memory_location(int memory_identification);
 
 
 
@@ -667,9 +714,9 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
 
 
 
-const char *private_generate_string_key(const char *key, pid_t hierarchy){
-  if(key == NULL){
-    perror("\n\tKey passada incorreta;\n");
+key_t private_generate_string_key(const char *key, pid_t hierarchy){
+  if(key == NULL || strlen(key) > 0 || hierarchy > 0){
+    perror("\n\tThe process key or pid is invalid\n");
     return 0;
   }
 
@@ -682,19 +729,19 @@ const char *private_generate_string_key(const char *key, pid_t hierarchy){
   uint8_t hash[SIZE_OF_SHA_256_HASH];
   calc_sha_256(hash, key_hash, strlen(key_hash));
 
-  char *hash_string = (char*)malloc(SIZE_OF_SHA_256_HASH * 2 + 1);
-  for (unsigned int i = 0; i < SIZE_OF_SHA_256_HASH; i++) {
-      sprintf(hash_string + i * 2, "%02x", hash[i]);
+  key_t numeric_key = 0;
+  for (int i = 0; i < SIZE_OF_SHA_256_HASH; i++) {
+    numeric_key = numeric_key ^ (hash[i] << ((i % sizeof(key_t)) * 8));
   }
 
-  return hash_string;
+  return numeric_key;
 }
 
-const char *private_creat_key(const char *key){
+key_t private_creat_key(const char *key){
   return private_generate_string_key(key, getpid());
 }
 
-const char *private_get_key(const char *key){
+key_t private_get_key(const char *key){
   return private_generate_string_key(key, getppid());
 }
 
@@ -918,7 +965,7 @@ void free_callback(CallbackProcess *self){
 
 //silver_chain_scope_end
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name){
+CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
 
   static bool primary_run = true;
   if(primary_run){
@@ -947,9 +994,14 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   strcpy((char *)self->name_class, class_name);
 
+  self->key = private_creat_key(self->name_class);
+
   self->class_list = NULL;
   
-  self->memory = NULL;
+  self->memory = private_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
+  if(!private_free_interrupted((MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+    return NULL;
+  }
 
   return self;
 }
@@ -972,11 +1024,90 @@ void free_CerradoSyn(CerradoSyn *self){
       free((char *)self->name_class);
     }
 
+    if(self->memory != NULL){
+      private_close_memory(self->memory);
+    }
+
     free(self);
   }
 
   return;
 }
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
+  
+  MemoryShared *self = (MemoryShared *)malloc(sizeof(MemoryShared) + 1);
+  if(self == NULL){
+    return NULL;
+  }
+
+  self->key = private_creat_key(name_class);
+
+  self->memory_location = shmget(self->key, size_max_traffic, _CONFIG_SHMGET_PERMISSIONS_);
+  if(self->memory_location == -1){
+    fprintf(stderr, "Error creating shared memory in: %d", self->key);
+    return NULL;
+  }
+
+  self->memory = (void *)shmat(self->memory_location, NULL, 0);
+  if(self->memory == (void *)-1){
+    fprintf(stderr, "Error creating shared memory in: %d", self->key);
+    private_delet_memory(self);
+    return NULL;
+  }
+
+  return self;
+}
+
+void *memory_data_attach(int memory_identification){
+  void *data = (void *)shmat(memory_identification, NULL, 0);
+  if(data == (void *)-1){
+    perror("Error attaching memory");
+    return NULL;
+  }
+
+  return data;
+}
+
+void private_close_memory(void *data_memory){
+  shmdt(data_memory);
+}
+
+void private_delet_memory(MemoryShared *memory_shared){
+  if(memory_shared != NULL){
+    private_close_memory(memory_shared->memory);
+    if(shmctl(memory_shared->memory_location, IPC_RMID, NULL) == -1){
+      perror("Error get stats memory");
+    }
+
+    free(memory_shared);
+  }
+}
+
+ShmidDS *get_info_memory_location(int memory_identification){
+  ShmidDS *shmInfo;
+  if(shmctl(memory_identification, IPC_STAT, shmInfo) == -1){
+    perror("Error get stats memory");
+    return NULL;
+  }
+
+  return shmInfo;
+}
+
+
+
+
 
 
 

@@ -7,12 +7,16 @@
 int callback_config(void *arg){
 
 
-  CallbackProcess *stuct_arg = (CallbackProcess *)arg;
+  CallbackProcess *struct_arg = (CallbackProcess *)arg;
+
+  MemoryShared *memory_argument_0 = (MemoryShared *)struct_arg->args->arguments[0]->arg;
+  memory_argument_0->memory = private_memory_data_attach(memory_argument_0);
 
   int(*function_callback)(ArgumentsCallback *arguments);
-  function_callback = stuct_arg->function_callback;
+  function_callback = struct_arg->function_callback;
+  int var_return = function_callback(struct_arg->args);
 
-  int var_return = function_callback(stuct_arg->args);
+  private_close_memory(memory_argument_0->memory);
 
   return var_return;
 }

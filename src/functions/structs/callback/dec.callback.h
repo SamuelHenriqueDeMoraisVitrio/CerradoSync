@@ -6,7 +6,7 @@
 
 
 
-CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg);
+CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(ArgumentsCallback *arguments));
 
 ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
 

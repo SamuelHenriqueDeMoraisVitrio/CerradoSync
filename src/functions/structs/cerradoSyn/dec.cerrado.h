@@ -7,7 +7,7 @@
 
 
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name);
+CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic);
 
 void free_CerradoSyn(CerradoSyn *self);
 

@@ -4,7 +4,7 @@
 #include "../../../imports/imports.dec.h"
 //silver_chain_scope_end
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name){
+CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
 
   static bool primary_run = true;
   if(primary_run){
@@ -37,7 +37,10 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name){
 
   self->class_list = NULL;
   
-  self->memory = NULL;
+  self->memory = private_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
+  if(!private_free_interrupted((MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+    return NULL;
+  }
 
   return self;
 }
@@ -58,6 +61,10 @@ void free_CerradoSyn(CerradoSyn *self){
 
     if(self->name_class != NULL){
       free((char *)self->name_class);
+    }
+
+    if(self->memory != NULL){
+      private_delet_memory(self->memory);
     }
 
     free(self);
