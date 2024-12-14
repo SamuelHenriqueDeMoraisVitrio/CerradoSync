@@ -10,6 +10,7 @@ MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t siz
   MemoryShared *self = (MemoryShared *)malloc(sizeof(MemoryShared) + 1);
 
   self->key = private_creat_key(name_class);
+  self->pid = getpid();
 
   self->memory_location = shmget(self->key, size_max_traffic, _CONFIG_SHMGET_PERMISSIONS_);
   if(self->memory_location == -1){
