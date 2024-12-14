@@ -14,6 +14,14 @@ typedef struct Argument_struct ArgumentCallback;
 
 typedef struct CallbackProcess_struct CallbackProcess;
 
+typedef struct MemorySharedContent_struct MemorySharedContent;
+
 typedef struct MemoryShared_struct MemoryShared;
+
+typedef struct TrafficPointersList_struct TrafficPointersList;
+
+typedef struct TrafficPointerObject_struct TrafficPointerObject;
+
+typedef struct TrafficMemory_struct TrafficMemory;
 
 

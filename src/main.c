@@ -2,7 +2,6 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "imports/imports.def.h"
-#include <string.h>
 //silver_chain_scope_end
 
 
@@ -23,6 +22,7 @@ int process_son(ArgumentsCallback *args){
 int main(){
   
   CerradoSyn *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_TRAFFIC_);
+  create_point_traffic(main, RED);
 
   strcpy(main->memory->memory, "Meu nome é samuel");
   printf("\n\t1: {%s}\n", (const char *)main->memory->memory);

@@ -5,12 +5,17 @@
 //silver_chain_scope_end
 
 
-
+struct MemorySharedContent_struct{
+  void *memoryShared;
+  void *memory;
+};
 
 struct MemoryShared_struct{
-  void *memory;
+  MemorySharedContent *memory_shared;
   key_t key;
   int memory_location;
+  TrafficPointersList *traffic;
 };
+
 
 
