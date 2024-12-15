@@ -17,6 +17,7 @@ void *private_memory_data_attach(MemoryShared *memory_shared){
 }
 
 void private_close_memory(MemoryShared *memory_shared){
+
   shmdt(memory_shared->memory_shared->memory);
 }
 
@@ -27,6 +28,26 @@ ShmidDS *get_info_memory_location(MemoryShared *memory_shared){
   }
 
   return shmInfo;
+}
+
+void pull_memory(MemorySharedContent *self){
+  
+  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+
+  memcpy(self->memory, self->memoryShared, sizeof(self->memoryShared));//Lendo
+
+  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
+}
+
+void push_memory(MemorySharedContent *self){
+
+  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+
+  memcpy(self->memoryShared, self->memory, sizeof(self->memory));// Gravando
+
+  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
 }
 
 

@@ -2,7 +2,6 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../imports/imports.typesF.h"
-#include <sys/types.h>
 //silver_chain_scope_end
 
 struct TrafficPointerObject_struct{
@@ -18,7 +17,8 @@ struct TrafficPointersList_struct{
 };
 
 struct TrafficMemory_struct{
-  int nulo;
+  int trafficID;
+  key_t key;
 };
 
 

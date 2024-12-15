@@ -6,33 +6,37 @@
 
 
 
-int process_son(ArgumentsCallback *args){
+int process_print_name(MemoryShared *memory, ArgumentsCallback *args){
 
-  MemoryShared *memory = (MemoryShared *)args->arguments[0]->arg;
-  printf("\n\t4: {%s}\n", (const char *)memory->memory);
+  const char *name = (const char *)args->arguments[0];
 
-  strcpy(memory->memory, "meu nome é Henrique");
-
-  printf("\n\t5: {%s}\n", (const char *)memory->memory);
+  printf("\n\tname: %s", name);
 
   return 0;
 }
 
-
 int main(){
   
   CerradoSyn *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_TRAFFIC_);
-  create_point_traffic(main, RED);
+  return 1;
+  if(!main){
+    printf("Main");
+    return 1;
+  }
 
-  strcpy(main->memory->memory, "Meu nome é samuel");
-  printf("\n\t1: {%s}\n", (const char *)main->memory->memory);
+  if(create_pointer_traffic(main, "className", RED_TRAFFIC) == -1){
+    printf("\n\tParou aqui\n");
+    return 1;
+  }
 
-  CallbackProcess *callback = new_CallbackProcess(main, process_son);
+
+  CallbackProcess *callback = new_CallbackProcess(main, process_print_name);
+
+  const char *name = "Samuel Henrique";
+  ArgumentCallback *name_arg = new_argument("teste", (void *)name, strlen(name));
+  add_argument(callback, name_arg);
 
   create_process(main, callback, NULL);
-
-  printf("\n\t2: {%s}\n", (const char *)main->memory->memory);
-
   free_callback(callback);
 
   printf("\n\tHello Word!\n");
@@ -40,9 +44,7 @@ int main(){
     pid_t temp_process = main->process_list[i]->process;
     waitpid(temp_process, NULL, 0);
   }
-  printf("\n\tBye Word %d\n", getpid());
-
-  printf("\n\t3: {%s}\n", (const char *)main->memory->memory);
+  printf("\n\tBye Word\n");
 
   free_CerradoSyn(main);
 

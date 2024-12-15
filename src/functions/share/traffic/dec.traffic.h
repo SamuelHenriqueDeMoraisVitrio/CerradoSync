@@ -6,7 +6,7 @@
 
 
 
-int private_get_stats_traffic(key_t key, int number_traffics, int index_get);
+int private_get_stats_traffic(int id, int index_get);
 
 int private_init_traffic(key_t key);
 
@@ -14,7 +14,7 @@ int private_creat_a_wait_point(const char *className, int initial, int number_tr
 
 int private_wait(key_t key, int number_traffics, int index_get, int color);
 
-int private_signal_traffic(key_t key, int number_traffics, int color);
+int private_signal_traffic(int id, int index_traffic, int color);
 
 void private_close_traffic(key_t key);
 

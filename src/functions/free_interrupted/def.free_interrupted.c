@@ -18,7 +18,7 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
     }
   }
 
-  return -1;
+  return 0;
 }
 
 

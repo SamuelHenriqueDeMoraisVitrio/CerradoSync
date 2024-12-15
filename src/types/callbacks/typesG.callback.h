@@ -9,8 +9,9 @@
 
 
 struct CallbackProcess_struct{
-  int(*function_callback)(ArgumentsCallback *arguments);
+  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
   ArgumentsCallback *args;
+  MemoryShared *memory;
 };
 
 

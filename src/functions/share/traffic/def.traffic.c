@@ -2,18 +2,14 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <stdio.h>
 //silver_chain_scope_end
 
 
 
 
-int private_get_stats_traffic(key_t key, int number_traffics, int index_get){
-  int sem_point = semget(key, number_traffics, 0);
-  if(sem_point == -1){
-    return -1;
-  }
-
-  return semctl(sem_point, index_get, GETVAL);
+int private_get_stats_traffic(int id, int index_get){
+  return semctl(id, index_get, GETVAL);
 }
 
 int private_init_traffic(key_t key){
@@ -54,39 +50,45 @@ int private_creat_a_wait_point(const char *className, int initial, int number_tr
 
 int private_wait(key_t key, int number_traffics, int index_get, int color){
 
-  int point_stats = private_get_stats_traffic(key, number_traffics, index_get);
-  if(point_stats == -1){
-    return -1;
-  }
-
-  if(color == GREEN_TRAFFIC){
-    while(point_stats != 0){
-      continue;
-    }
-  }
-  if(color == RED_TRAFFIC){
-    while(point_stats == 0){
-      continue;
-    }
-  }
-
-  return 1;
-}
-
-int private_signal_traffic(key_t key, int number_traffics, int color){
-
   int sem_point = semget(key, number_traffics, 0);
   if(sem_point == -1){
     return -1;
   }
 
-  struct sembuf operation = {0, (color>0?(GREEN_TRAFFIC):(RED_TRAFFIC - 1)), 0};
-
-  if(semop(sem_point, &operation, 1) == -1){
+  int point_stats = private_get_stats_traffic(sem_point, index_get);
+  if(point_stats == -1){
     return -1;
   }
 
-  return sem_point;
+  if(color == GREEN_TRAFFIC || color == RED_TRAFFIC){
+    
+    do{
+
+      point_stats = private_get_stats_traffic(sem_point, index_get);
+      if(point_stats == -1){
+        return -1;
+      }
+      usleep(1000);
+      continue;
+    
+    }while((color == GREEN_TRAFFIC && point_stats == 0) || (color == RED_TRAFFIC && point_stats > 0));
+
+    return 1;
+
+  }
+
+  return 0;
+}
+
+int private_signal_traffic(int id, int index_traffic, int color){
+
+  struct sembuf operation = {0, color, 0};
+
+  if(semop(id, &operation, 1) == -1){
+    return -1;
+  }
+
+  return id;
 }
 
 void private_close_traffic(key_t key){
@@ -98,6 +100,13 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
   int result = -1;
   int number_of_traffics = 1;
   key_t key;
+
+  if(initial_pointer <= 0){
+    initial_pointer = RED_TRAFFIC;
+  }
+  if(initial_pointer > 0){
+    initial_pointer = GREEN_TRAFFIC;
+  }
 
   if((result = private_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
     return -1;
@@ -147,28 +156,31 @@ int signal_traffic(MemoryShared memory, const char *className, int color){
     return -1;
   }
 
-  int result = -1;
-  if((result = private_get_stats_traffic(key, 1, 0)) == -1){
+  int sem_point = semget(key, 1, 0);
+  if(sem_point == -1){
     return -1;
   }
 
-  int expected = -1;
+  int result = -1;
+  if((result = private_get_stats_traffic(sem_point, 0)) == -1){
+    return -1;
+  }
+
   if(color == GREEN_TRAFFIC){
-    if(result == 0){
-      private_signal_traffic(key, 1, GREEN_TRAFFIC);
+    if(result <= 0){
+      private_signal_traffic(0, 0, 1);
       return 1;
     }
   }
   if(color == RED_TRAFFIC){
     if(result > 0){
-      private_signal_traffic(key, 1, RED_TRAFFIC);
+      private_signal_traffic(0, 0, -1);
       return 1;
     }
   }
 
   return 0;
 }
-
 
 
 
