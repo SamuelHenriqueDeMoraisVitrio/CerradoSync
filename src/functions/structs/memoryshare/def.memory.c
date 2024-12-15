@@ -2,6 +2,9 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <string.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
 //silver_chain_scope_end
 
 
@@ -27,23 +30,24 @@ MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t siz
     return NULL;
   }
 
-  self->memory_shared = private_new_MemorySharedContent(memory);
+  int mem_temp = 1;
+  memcpy(memory, &mem_temp, sizeof(mem_temp));
+
+  self->key = private_creat_key(name_class);
+  self->pid = getpid();
+
+  self->memory_shared = private_new_MemorySharedContent(memory, self->key);
   if(self->memory_shared == NULL){
-    shmdt(self->memory_shared->memory);
+    shmdt(memory);
     shmctl(self->memory_location, IPC_RMID, NULL);
     private_free_interrupted(self->memory_shared, (void *[]){self}, size_arguments);
     return NULL;
   }
 
-  self->key = private_creat_key(name_class);
-  self->pid = getpid();
-
-  self->memory_shared->traffic = private_new_TrafficMemory(self->key);
-  if(self->memory_shared->traffic == NULL){
+  self->traffic = private_new_TrafficPointersList();
+  if(!self->traffic){
     shmdt(self->memory_shared->memory);
     shmctl(self->memory_location, IPC_RMID, NULL);
-    private_free_MemorySharedContent(self->memory_shared);
-    private_free_interrupted(self->memory_shared->traffic, (void *[]){self}, ++size_arguments);
     return NULL;
   }
 
@@ -55,8 +59,6 @@ void private_delet_memory(MemoryShared *memory_shared){
     private_close_memory(memory_shared);
 
     private_free_MemorySharedContent(memory_shared->memory_shared);
-
-    private_free_traffic(memory_shared->memory_shared->traffic);
 
     shmctl(memory_shared->memory_location, IPC_RMID, NULL);
 

@@ -18,8 +18,7 @@ int process_print_name(MemoryShared *memory, ArgumentsCallback *args){
 int main(){
   
   CerradoSyn *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_TRAFFIC_);
-  return 1;
-  if(!main){
+  if(!main->memory->traffic){
     printf("Main");
     return 1;
   }

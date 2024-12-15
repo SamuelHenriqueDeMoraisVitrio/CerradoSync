@@ -16,7 +16,7 @@ int private_wait(key_t key, int number_traffics, int index_get, int color);
 
 int private_signal_traffic(int id, int index_traffic, int color);
 
-void private_close_traffic(key_t key);
+void private_close_traffic(int id);
 
 int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer);
 

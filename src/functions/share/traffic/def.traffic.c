@@ -2,7 +2,6 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
-#include <stdio.h>
 //silver_chain_scope_end
 
 
@@ -91,8 +90,8 @@ int private_signal_traffic(int id, int index_traffic, int color){
   return id;
 }
 
-void private_close_traffic(key_t key){
-  semctl(key, 0, IPC_RMID);
+void private_close_traffic(int id){
+  semctl(id, 0, IPC_RMID);
 }
 
 int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer){

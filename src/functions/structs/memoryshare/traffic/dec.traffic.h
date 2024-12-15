@@ -8,6 +8,14 @@
 
 TrafficMemory *private_new_TrafficMemory(key_t key);
 
+TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
+
+TrafficPointersList *private_new_TrafficPointersList();
+
+void private_free_TrafficPointerObject(TrafficPointerObject *self);
+
+void private_free_TrafficPointersList(TrafficPointersList *self);
+
 void private_free_traffic(TrafficMemory *self);
 
 
