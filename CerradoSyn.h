@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
+#include <sys/sem.h>
 
 
 
@@ -385,11 +386,27 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 #define _SIZE_STACK_PROCESS_1MB_ 1024 * 1024 // 1mb
 
-#define _DEFAULT_MAX_SIZE_TRAFFIC_ 1024 // 1kb
+#define _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_ 1024 // 1kb
 
 #define _WRITE_AND_READ_ 0666 // Read and write permission
 
 #define _CONFIG_SHMGET_PERMISSIONS_ _WRITE_AND_READ_ | IPC_CREAT | IPC_EXCL // shmget configuration function
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+#define GREEN_TRAFFIC 1
+#define RED_TRAFFIC 0
+
+
+
+
 
 
 #endif
@@ -424,7 +441,15 @@ typedef struct Argument_struct ArgumentCallback;
 
 typedef struct CallbackProcess_struct CallbackProcess;
 
+typedef struct MemorySharedContent_struct MemorySharedContent;
+
 typedef struct MemoryShared_struct MemoryShared;
+
+typedef struct TrafficPointersList_struct TrafficPointersList;
+
+typedef struct TrafficPointerObject_struct TrafficPointerObject;
+
+typedef struct TrafficMemory_struct TrafficMemory;
 
 
 
@@ -469,8 +494,9 @@ struct Argument_struct{
 
 
 struct CallbackProcess_struct{
-  int(*function_callback)(ArgumentsCallback *arguments);
+  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
   ArgumentsCallback *args;
+  MemoryShared *memory;
 };
 
 
@@ -480,16 +506,26 @@ struct CallbackProcess_struct{
 //silver_chain_scope_start
 //mannaged by silver chain
 
+#include <stddef.h>
 //silver_chain_scope_end
 
 
-
+struct MemorySharedContent_struct{
+  void *memoryShared;
+  void *memory;
+  size_t size_memory;
+  size_t size_memoryShared;
+  TrafficMemory *traffic;
+};
 
 struct MemoryShared_struct{
-  void *memory;
+  MemorySharedContent *memory_shared;
   key_t key;
+  pid_t pid;
   int memory_location;
+  TrafficPointersList *traffic;
 };
+
 
 
 
@@ -507,6 +543,33 @@ struct ProcessStruct{
 };
 
 
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+struct TrafficPointerObject_struct{
+  int traffic_ID;
+  int number_traffics;
+  key_t key;
+  const char *nameClass;
+};
+
+struct TrafficPointersList_struct{
+  int size_elements;
+  TrafficPointerObject **semID;
+};
+
+struct TrafficMemory_struct{
+  int trafficID;
+  key_t key;
+};
 
 
 
@@ -583,7 +646,7 @@ key_t private_get_key(const char *key);
 
 
 
-void private_clone_process(Process *process, CallbackProcess *callback, int *flags);
+int private_clone_process(Process *process, CallbackProcess *callback, int *flags);
 
 
 
@@ -595,7 +658,7 @@ void private_clone_process(Process *process, CallbackProcess *callback, int *fla
 //silver_chain_scope_end
 
 
-bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags);
+int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags);
 
 
 
@@ -607,7 +670,68 @@ bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fl
 
 
 
-CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg);
+int private_memory_data_attach(MemoryShared *memory_shared);
+
+ShmidDS *get_info_memory_location(MemoryShared *memory_shared);
+
+void private_close_memory(MemoryShared *memory_shared);
+
+void pull_memory(MemorySharedContent *self);
+
+void push_memory(MemorySharedContent *self);
+
+void config_memory(MemorySharedContent *self, void *new_value, size_t size_value);
+
+void private_config_memory_share(MemorySharedContent *self);
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+int private_get_stats_traffic(int id, int index_get);
+
+int private_init_traffic(key_t key);
+
+int private_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key);
+
+int private_wait(key_t key, int number_traffics, int index_get, int color);
+
+int private_signal_traffic(int id, int index_traffic, int color);
+
+void private_close_traffic(int id);
+
+int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer);
+
+int wait_traffic(MemoryShared *memory, const char *className, int color);
+
+int signal_traffic(MemoryShared *memory, const char *className, int color);
+
+
+
+
+
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments));
 
 ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
 
@@ -615,7 +739,11 @@ void private_free_argument(ArgumentCallback *self);
 
 void free_callback(CallbackProcess *self);
 
-void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+
+ArgumentsCallback *private_new_ArgumentsCallback();
+
+void private_free_ArgumentsCallback(ArgumentsCallback *self);
 
 
 
@@ -649,13 +777,45 @@ void free_CerradoSyn(CerradoSyn *self);
 
 MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
 
-void *memory_data_attach(int memory_identification);
-
-void private_close_memory(void *data_memory);
-
 void private_delet_memory(MemoryShared *memory_shared);
 
-ShmidDS *get_info_memory_location(int memory_identification);
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+#include <sys/types.h>
+//silver_chain_scope_end
+
+
+MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared);
+
+void private_free_MemorySharedContent(MemorySharedContent *self);
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+TrafficMemory *private_new_TrafficMemory(key_t key);
+
+TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
+
+TrafficPointersList *private_new_TrafficPointersList();
+
+void private_free_TrafficPointerObject(TrafficPointerObject *self);
+
+void private_free_TrafficPointersList(TrafficPointersList *self);
+
+void private_free_traffic(TrafficMemory *self);
+
 
 
 
@@ -699,7 +859,7 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
     }
   }
 
-  return -1;
+  return 0;
 }
 
 
@@ -715,8 +875,7 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
 
 
 key_t private_generate_string_key(const char *key, pid_t hierarchy){
-  if(key == NULL || strlen(key) > 0 || hierarchy > 0){
-    perror("\n\tThe process key or pid is invalid\n");
+  if(key == NULL || !(strlen(key) > 0) || !(hierarchy > 0)){
     return 0;
   }
 
@@ -754,32 +913,38 @@ key_t private_get_key(const char *key){
 //silver_chain_scope_start
 //mannaged by silver chain
 
+#include <stdio.h>
 //silver_chain_scope_end
 
 int callback_config(void *arg){
 
+  CallbackProcess *struct_arg = (CallbackProcess *)arg;
 
-  CallbackProcess *stuct_arg = (CallbackProcess *)arg;
+  MemoryShared *memory_argument_0 = (MemoryShared *)struct_arg->memory;
+  private_memory_data_attach(memory_argument_0);
 
-  int(*function_callback)(ArgumentsCallback *arguments);
-  function_callback = stuct_arg->function_callback;
+  pull_memory(memory_argument_0->memory_shared);
 
-  int var_return = function_callback(stuct_arg->args);
+  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
+  function_callback = struct_arg->function_callback;
+  int var_return = function_callback(memory_argument_0, struct_arg->args);
+
+  private_close_memory(memory_argument_0);
 
   return var_return;
 }
 
-void private_clone_process(Process *process, CallbackProcess *callback, int *flags){
-
-  if(!process){
-    perror("Error cloning process");
-    exit(EXIT_FAILURE);
-  }
+int private_clone_process(Process *process, CallbackProcess *callback, int *flags){
 
   pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
+  if(pid_process == -1){
+    return -1;
+  }
+
   process->process = pid_process;
 
+  return 1;
 
 }
 
@@ -796,31 +961,116 @@ void private_clone_process(Process *process, CallbackProcess *callback, int *fla
 
 
 
-bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
+int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
-      return false;
+      return -1;
   }
 
   if(!main_process || !callback){
-    return false;
+    return -1;
   }
 
   Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
+  if(!new_process){
+    return -1;
+  }
 
   private_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
     private_free_process(new_process);
-    return false;
+    return -1;
   }
 
   main_process->size_process++;
 
   main_process->process_list = (Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(Process *));
+  if(!main_process->process_list){
+    return -1;
+  }
 
   main_process->process_list[main_process->size_process - 1] = new_process;
 
-  return true;
+  return 1;
 }
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+#include <string.h>
+//silver_chain_scope_end
+
+
+
+
+int private_memory_data_attach(MemoryShared *memory_shared){
+  void *data = (void *)shmat(memory_shared->memory_location, NULL, 0);
+  if(data == (void *)-1){
+    return -1;
+  }
+
+  memory_shared->memory_shared->memoryShared = data;
+  return 1;
+}
+
+void private_close_memory(MemoryShared *memory_shared){
+
+  shmdt(memory_shared->memory_shared->memoryShared);
+}
+
+ShmidDS *get_info_memory_location(MemoryShared *memory_shared){
+  ShmidDS *shmInfo;
+  if(shmctl(memory_shared->memory_location, IPC_STAT, shmInfo) == -1){
+    return NULL;
+  }
+
+  return shmInfo;
+}
+
+void pull_memory(MemorySharedContent *self){
+  
+  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+
+  config_memory(self, self->memoryShared, self->size_memoryShared);//Lendo
+
+  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
+}
+
+void push_memory(MemorySharedContent *self){
+
+  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+
+  private_config_memory_share(self);// Gravando
+
+  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
+}
+
+void config_memory(MemorySharedContent *self, void *new_value, size_t size_value){
+
+  memset(self->memory, 0, self->size_memory);
+
+  self->size_memory = size_value + 1;
+
+  self->memory = (void *)realloc(self->memory, self->size_memory);
+
+  memcpy(self->memory, new_value , size_value);
+}
+
+void private_config_memory_share(MemorySharedContent *self){
+
+  memset(self->memoryShared, 0, self->size_memoryShared);
+
+  memcpy(self->memoryShared, self->memory, self->size_memory);
+
+}
+
+
 
 
 
@@ -833,27 +1083,219 @@ bool create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fl
 //silver_chain_scope_end
 
 
-void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
 
-  if(!callback_self || !add_arg){
-    return;
+
+int private_get_stats_traffic(int id, int index_get){
+  return semctl(id, index_get, GETVAL);
+}
+
+int private_init_traffic(key_t key){
+
+  int sem_share = semget(key, 2, IPC_CREAT | IPC_EXCL | 0666);
+
+  if(sem_share == -1){
+    return sem_share;
   }
 
-  callback_self->args->size_arguments++;
-
-  callback_self->args->arguments = (ArgumentCallback **)realloc(callback_self->args->arguments, callback_self->args->size_arguments + 1);
-  if(callback_self->args->arguments == NULL){
-    callback_self->args->size_arguments--;
-    return;
+  if(semctl(sem_share, 0, SETVAL, 1) == -1){// The first set of traffic lights will be dedicated to "memory share";
+    return -1;
   }
 
-  callback_self->args->arguments[callback_self->args->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
-  if(callback_self->args->arguments == NULL){
-    callback_self->args->size_arguments--;
-    return;
+  if(semctl(sem_share, 1, SETVAL, 0) == -1){// The second set of traffic lights will be dedicated to the "await sync";
+    return -1;
   }
   
-  callback_self->args->arguments[callback_self->args->size_arguments - 1] = add_arg;
+  return sem_share;
+}
+
+int private_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key){
+  *key = private_creat_key(className);
+
+  int sem_point = semget(*key, 1, IPC_CREAT | IPC_EXCL | 0666);
+  if(sem_point == -1){
+    return -1;
+  }
+
+  for(int i = 0; i < number_traffics; i++){
+    if(semctl(sem_point, i, SETVAL, initial) == -1){
+      return -1;
+    }
+  }
+
+  return sem_point;
+}
+
+int private_wait(key_t key, int number_traffics, int index_get, int color){
+
+  int sem_point = semget(key, number_traffics, 0);
+  if(sem_point == -1){
+    return -1;
+  }
+
+  int point_stats = private_get_stats_traffic(sem_point, index_get);
+  if(point_stats == -1){
+    return -1;
+  }
+
+  if(color == GREEN_TRAFFIC || color == RED_TRAFFIC){
+    
+    do{
+
+      point_stats = private_get_stats_traffic(sem_point, index_get);
+      if(point_stats == -1){
+        return -1;
+      }
+      usleep(1000);
+      continue;
+    
+    }while((color == GREEN_TRAFFIC && point_stats == 0) || (color == RED_TRAFFIC && point_stats > 0));
+
+    return 1;
+
+  }
+
+  return 0;
+}
+
+int private_signal_traffic(int id, int index_traffic, int color){
+
+  struct sembuf operation = {0, color, 0};
+
+  if(semop(id, &operation, 1) == -1){
+    return -1;
+  }
+
+  return id;
+}
+
+void private_close_traffic(int id){
+  semctl(id, 0, IPC_RMID);
+}
+
+int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer){
+  
+  int result = -1;
+  int number_of_traffics = 1;
+  key_t key;
+
+  if(initial_pointer <= 0){
+    initial_pointer = RED_TRAFFIC;
+  }
+  if(initial_pointer > 0){
+    initial_pointer = GREEN_TRAFFIC;
+  }
+
+  if((result = private_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
+    return -1;
+  }
+
+  TrafficPointersList *objs_traffic = self->memory->traffic;
+  objs_traffic->semID = (TrafficPointerObject **)realloc(objs_traffic->semID, sizeof(TrafficPointerObject *) * (objs_traffic->size_elements + 1));
+  if(objs_traffic->semID == NULL){
+    return -1;
+  }
+
+  TrafficPointerObject *obj_traffic = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject));
+  if(obj_traffic == NULL){
+    return -1;
+  }
+
+  obj_traffic->traffic_ID = result;
+  obj_traffic->number_traffics = number_of_traffics;
+  obj_traffic->key = key;
+  obj_traffic->nameClass = className;
+
+  objs_traffic->semID[objs_traffic->size_elements] = obj_traffic;
+
+  objs_traffic->size_elements++;
+
+  return 1;
+}
+
+int wait_traffic(MemoryShared *memory, const char *className, int color){
+
+  key_t key = private_generate_string_key(className, memory->pid);
+  if(!key){
+    return -1;
+  }
+
+  if(private_wait(key, 1, 0, color) == -1){
+    return -1;
+  }
+
+  return 1;
+}
+
+int signal_traffic(MemoryShared *memory, const char *className, int color){
+
+  key_t key = private_generate_string_key(className, memory->pid);
+  if(!key){
+    return -1;
+  }
+
+  int sem_point = semget(key, 1, 0);
+  if(sem_point == -1){
+    return -1;
+  }
+
+  int result = -1;
+  if((result = private_get_stats_traffic(sem_point, 0)) == -1){
+    return -1;
+  }
+
+  if(color == GREEN_TRAFFIC){
+    if(result <= 0){
+      private_signal_traffic(sem_point, 0, 1);
+      return 1;
+    }
+  }
+  if(color == RED_TRAFFIC){
+    if(result > 0){
+      private_signal_traffic(sem_point, 0, -1);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
+
+  if(!callback_self || !add_arg || !callback_self->args){
+    return -1;
+  }
+
+  ArgumentsCallback *self = callback_self->args;
+
+  self->size_arguments++;
+
+  self->arguments = (ArgumentCallback **)realloc(self->arguments, sizeof(ArgumentCallback *) * (self->size_arguments + 1));
+  if(!self->arguments){
+    self->size_arguments--;
+    return -2;
+  }
+
+  self->arguments[self->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
+  if(!self->arguments[self->size_arguments - 1]){
+    self->size_arguments--;
+    return -3;
+  }
+  
+  self->arguments[self->size_arguments - 1] = add_arg;
+
+  return 1;
 }
 
 
@@ -880,7 +1322,7 @@ ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_
     return NULL;
   }
 
-  memcpy(self->arg, arg, arg_size);
+  memcpy(self->arg, arg, arg_size + 1);
 
   return self;
 
@@ -898,9 +1340,49 @@ void private_free_argument(ArgumentCallback *self){
   }
 }
 
-CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *arguments), ArgumentCallback *primary_arg){
+ArgumentsCallback *private_new_ArgumentsCallback(){
+  ArgumentsCallback *self = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
 
-  if(!function || !primary_arg){
+  self->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) + 1);
+  if(!private_free_interrupted(self->arguments, (void *[]){self}, 1)){
+    return NULL;
+  }
+
+  self->arguments[0] = (ArgumentCallback *)malloc(0);
+  if(!private_free_interrupted(self->arguments[0], (void *[]){self->arguments, self}, 2)){
+    return NULL;
+  }
+
+  self->size_arguments = 0;
+
+  return self;
+}
+
+void private_free_ArgumentsCallback(ArgumentsCallback *self){
+  if(self){
+  
+    if(self->arguments){
+
+      for(int i=0; i < self->size_arguments + 1; i++){
+        if(self->arguments[i] != NULL){
+          ArgumentCallback *argument = self->arguments[i];
+          private_free_argument(argument);
+        }
+      }
+
+      free(self->arguments);
+    }
+
+    free(self);
+  }
+}
+
+CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments)){
+
+  if(!function || !process_father){
     return NULL;
   }
 
@@ -909,49 +1391,20 @@ CallbackProcess *new_CallbackProcess(int (*function)(ArgumentsCallback *argument
     return NULL;
   }
 
+  self->args = private_new_ArgumentsCallback();
+
   self->function_callback = function;
 
-  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) * 2);
-  if(!private_free_interrupted(self->args, (void *[]){self}, 1)){
-    return NULL;
-  }
-
-  self->args->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) * 2);
-  if(!private_free_interrupted(self->args->arguments, (void *[]){self->args, self}, 2)){
-    return NULL;
-  }
-
-  self->args->size_arguments = 1;
-
-  self->args->arguments[0] = (ArgumentCallback *)malloc(sizeof(*primary_arg));
-  if(!private_free_interrupted(self->args->arguments[0], (void *[]){self->args->arguments, self->args, self}, 3)){
-    return NULL;
-  }
-
-  self->args->arguments[0] = primary_arg;
+  self->memory = process_father->memory;
 
   return self;
-
 }
 
 void free_callback(CallbackProcess *self){
   if(self != NULL){
 
-    if(self->args != NULL){
-
-      if(self->args->arguments != NULL){
-
-        for(int i=0; i < self->args->size_arguments + 1; i++){
-          if(self->args->arguments[i] != NULL){
-            ArgumentCallback *argument = self->args->arguments[i];
-            private_free_argument(argument);
-          }
-        }
-        
-        free(self->args->arguments);
-      }
-      free(self->args);
-    }
+    private_free_ArgumentsCallback(self->args);
+    
     free(self);
   }
 }
@@ -995,6 +1448,10 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   strcpy((char *)self->name_class, class_name);
 
   self->key = private_creat_key(self->name_class);
+  if(!self->key){
+    private_free_interrupted(NULL, (void *[]){(char *)self->name_class, self->process_list, self}, 3);
+    return NULL;
+  }
 
   self->class_list = NULL;
   
@@ -1025,7 +1482,7 @@ void free_CerradoSyn(CerradoSyn *self){
     }
 
     if(self->memory != NULL){
-      private_close_memory(self->memory);
+      private_delet_memory(self->memory);
     }
 
     free(self);
@@ -1047,66 +1504,243 @@ void free_CerradoSyn(CerradoSyn *self){
 
 MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
   
+  short size_arguments = 0;
+
   MemoryShared *self = (MemoryShared *)malloc(sizeof(MemoryShared) + 1);
-  if(self == NULL){
+  if(!private_free_interrupted(self, NULL, size_arguments)){
     return NULL;
   }
 
   self->key = private_creat_key(name_class);
-
-  self->memory_location = shmget(self->key, size_max_traffic, _CONFIG_SHMGET_PERMISSIONS_);
-  if(self->memory_location == -1){
-    fprintf(stderr, "Error creating shared memory in: %d", self->key);
+  if(!self->key){
+    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
     return NULL;
   }
 
-  self->memory = (void *)shmat(self->memory_location, NULL, 0);
-  if(self->memory == (void *)-1){
-    fprintf(stderr, "Error creating shared memory in: %d", self->key);
-    private_delet_memory(self);
+  self->pid = getpid();
+
+  self->memory_location = shmget(self->key, size_max_traffic, _CONFIG_SHMGET_PERMISSIONS_);
+  if(self->memory_location == -1){
+    private_free_interrupted(NULL, (void *[]){self}, ++size_arguments);
+    printf("erroB");
+    return NULL;
+  }
+
+
+  self->memory_shared = private_new_MemorySharedContent(self, size_max_traffic);
+  if(!self->memory_shared){
+    shmctl(self->memory_location, IPC_RMID, NULL);
+    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
+    printf("erro");
+    return NULL;
+  }
+
+  self->traffic = private_new_TrafficPointersList();
+  if(!self->traffic){
+    private_free_MemorySharedContent(self->memory_shared);
+    shmctl(self->memory_location, IPC_RMID, NULL);
+    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
+    printf("erro");
     return NULL;
   }
 
   return self;
 }
 
-void *memory_data_attach(int memory_identification){
-  void *data = (void *)shmat(memory_identification, NULL, 0);
-  if(data == (void *)-1){
-    perror("Error attaching memory");
-    return NULL;
-  }
-
-  return data;
-}
-
-void private_close_memory(void *data_memory){
-  shmdt(data_memory);
-}
-
 void private_delet_memory(MemoryShared *memory_shared){
-  if(memory_shared != NULL){
-    private_close_memory(memory_shared->memory);
-    if(shmctl(memory_shared->memory_location, IPC_RMID, NULL) == -1){
-      perror("Error get stats memory");
-    }
+  if(memory_shared){
+    private_free_TrafficPointersList(memory_shared->traffic);
+    private_free_MemorySharedContent(memory_shared->memory_shared);
+
+    shmctl(memory_shared->memory_location, IPC_RMID, NULL);
 
     free(memory_shared);
   }
 }
 
-ShmidDS *get_info_memory_location(int memory_identification){
-  ShmidDS *shmInfo;
-  if(shmctl(memory_identification, IPC_STAT, shmInfo) == -1){
-    perror("Error get stats memory");
+
+
+
+
+
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+#include <stddef.h>
+//silver_chain_scope_end
+
+
+
+MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared){
+
+  MemorySharedContent *self = (MemorySharedContent*)malloc(sizeof(MemorySharedContent));
+  if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
-  return shmInfo;
+  self->size_memoryShared = size_memoryShared;
+
+  self->traffic = private_new_TrafficMemory(memory_struct->key);
+  if(!private_free_interrupted(self->traffic, (void *[]){self}, 1)){
+    return NULL;
+  }
+
+  self->memoryShared = (void *)shmat(memory_struct->memory_location, NULL, 0);;
+  if(self->memoryShared == (void *)-1){
+    private_free_traffic(self->traffic);
+    private_free_interrupted(NULL, (void *[]){self}, 1);
+    return NULL;
+  }
+
+  self->size_memory = sizeof(self->memoryShared);
+  self->memory = (void *)malloc(self->size_memory + 1);
+  if(!self->memory){
+    private_close_memory(memory_struct);
+    private_free_traffic(self->traffic);
+    private_free_interrupted(NULL, (void *[]){self}, 1);
+    return NULL;
+  }
+
+  memcpy(self->memory, self->memoryShared, sizeof(self->memoryShared));
+
+  return self;
+}
+
+void private_free_MemorySharedContent(MemorySharedContent *self){
+  if(self){
+    
+    if(self->memory){
+      free(self->memory);
+    }
+    
+    if(self->memoryShared != (void *)-1){
+      shmdt(self->memoryShared);
+    }
+
+    if(self->traffic){
+      private_free_traffic(self->traffic);
+    }
+
+    free(self);
+  }
 }
 
 
 
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+TrafficMemory *private_new_TrafficMemory(key_t key){
+  
+  TrafficMemory *self = (TrafficMemory *)malloc(sizeof(TrafficMemory));
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
+
+  self->key = key;
+  self->trafficID = private_init_traffic(self->key);
+  if(self->trafficID == -1){
+    free(self);
+    return NULL;
+  }
+
+  return self;
+}
+
+TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer){
+
+  if(!private_free_interrupted((void *)className, NULL, 0)){
+    return NULL;
+  }
+
+  TrafficPointerObject *self = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject) + 1);
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
+
+  self->nameClass = (const char *)malloc(strlen(className) + 1);
+  if(!private_free_interrupted((void *)self->nameClass, (void *[]){self}, 1)){
+    return NULL;
+  }
+
+  self->nameClass = className;
+  
+
+  self->number_traffics = contTraffics;
+  if(self->number_traffics < 1){
+    private_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
+    return NULL;
+  }
+
+  if((self->traffic_ID = private_creat_a_wait_point(self->nameClass, initialPointer, self->number_traffics, &self->key)) == -1){
+    private_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
+    return NULL;
+  }
+
+  return self;
+
+}
+
+TrafficPointersList *private_new_TrafficPointersList(){
+
+  TrafficPointersList *self = (TrafficPointersList *)malloc(sizeof(TrafficPointersList) + 1);
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
+
+  self->size_elements = 0;
+  self->semID = (TrafficPointerObject **)malloc(sizeof(TrafficPointerObject *));
+  if(!private_free_interrupted(self->semID, (void *[]){self}, 1)){
+    return NULL;
+  }
+
+  return self;
+}
+
+void private_free_traffic(TrafficMemory *self){
+  if(self){
+    private_close_traffic(self->trafficID);
+    free(self);
+  }
+}
+
+void private_free_TrafficPointerObject(TrafficPointerObject *self){
+  if(self){
+
+    if(self->traffic_ID != -1){
+      private_close_traffic(self->traffic_ID);
+    }
+
+    free(self);
+  }
+}
+
+void private_free_TrafficPointersList(TrafficPointersList *self){
+
+  if(self){
+
+    if(self->semID){
+      for(int i = 0; i < self->size_elements; i++){
+        private_free_TrafficPointerObject(self->semID[i]);
+      }
+      free(self->semID);
+    }
+    
+    free(self);
+  }
+}
 
 
 
@@ -1123,7 +1757,7 @@ ShmidDS *get_info_memory_location(int memory_identification){
 
 Process *private_new_process(int size_stack){
 
-  Process *self = malloc(sizeof(Process));
+  Process *self = (Process *)malloc(sizeof(Process));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
