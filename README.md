@@ -24,10 +24,9 @@ To use CerradoSync in your projects:
    #include "CerradoSync.h"
    ```
 2. compilation.
-
-```bash
+  ```bash
   gcc -o my_program my_program.c
-```
+  ```
 
 ---
 
