@@ -21,12 +21,12 @@ To use CerradoSyn in your projects:
 
 1. Include the library headers in your source code:
    ```c
-   #include "imports/imports.def.h"
+   #include "CerradoSyn.h"
    ```
-2. Link the library during compilation.
+2. compilation.
 
 ```bash
-gcc -o my_program my_program.c -lCerradoSyn
+  gcc -o my_program my_program.c -lCerradoSyn
 ```
 
 ---
@@ -80,7 +80,7 @@ gcc -o my_program my_program.c -lCerradoSyn
 ## Example Usage
 
 ```c
-#include "imports/imports.def.h"
+#include "CerradoSyn.h"
 
 int process_print_name(MemoryShared *memory, ArgumentsCallback *args) {
     const char *name = (const char *)args->arguments[0]->arg;
@@ -145,19 +145,4 @@ int main() {
 ```
 
 ---
-
-## License
-
-This project is licensed under [MIT License](LICENSE).
-
-## Contact
-
-For questions, feature requests, or issues, please reach out at:
-- **Email**: samuel.henrique@example.com
-- **GitHub**: [GitHub Profile](https://github.com/samuelhenrique)
-
----
-
-Happy coding with CerradoSyn!
-
 
