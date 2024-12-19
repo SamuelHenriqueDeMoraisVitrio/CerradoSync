@@ -14,7 +14,11 @@ void private_free_argument(ArgumentCallback *self);
 
 void free_callback(CallbackProcess *self);
 
-void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+
+ArgumentsCallback *private_new_ArgumentsCallback();
+
+void private_free_ArgumentsCallback(ArgumentsCallback *self);
 
 
 

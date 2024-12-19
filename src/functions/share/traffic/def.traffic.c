@@ -117,7 +117,7 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
     return -1;
   }
 
-  TrafficPointerObject *obj_traffic = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject) + 1);
+  TrafficPointerObject *obj_traffic = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject));
   if(obj_traffic == NULL){
     return -1;
   }
@@ -127,16 +127,16 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
   obj_traffic->key = key;
   obj_traffic->nameClass = className;
 
-  objs_traffic->semID[objs_traffic->size_elements - 1] = obj_traffic;
+  objs_traffic->semID[objs_traffic->size_elements] = obj_traffic;
 
   objs_traffic->size_elements++;
 
   return 1;
 }
 
-int wait_traffic(MemoryShared memory, const char *className, int color){
+int wait_traffic(MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory.pid);
+  key_t key = private_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
@@ -148,9 +148,9 @@ int wait_traffic(MemoryShared memory, const char *className, int color){
   return 1;
 }
 
-int signal_traffic(MemoryShared memory, const char *className, int color){
+int signal_traffic(MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory.pid);
+  key_t key = private_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
@@ -167,13 +167,13 @@ int signal_traffic(MemoryShared memory, const char *className, int color){
 
   if(color == GREEN_TRAFFIC){
     if(result <= 0){
-      private_signal_traffic(0, 0, 1);
+      private_signal_traffic(sem_point, 0, 1);
       return 1;
     }
   }
   if(color == RED_TRAFFIC){
     if(result > 0){
-      private_signal_traffic(0, 0, -1);
+      private_signal_traffic(sem_point, 0, -1);
       return 1;
     }
   }

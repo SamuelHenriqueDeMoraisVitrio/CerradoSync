@@ -75,17 +75,13 @@ TrafficPointersList *private_new_TrafficPointersList(){
 
 void private_free_traffic(TrafficMemory *self){
   if(self){
-    private_close_traffic(self->key);
+    private_close_traffic(self->trafficID);
     free(self);
   }
 }
 
 void private_free_TrafficPointerObject(TrafficPointerObject *self){
   if(self){
-
-    if(self->nameClass){
-      free((void *)self->nameClass);
-    }
 
     if(self->traffic_ID != -1){
       private_close_traffic(self->traffic_ID);
@@ -100,6 +96,9 @@ void private_free_TrafficPointersList(TrafficPointersList *self){
   if(self){
 
     if(self->semID){
+      for(int i = 0; i < self->size_elements; i++){
+        private_free_TrafficPointerObject(self->semID[i]);
+      }
       free(self->semID);
     }
     

@@ -34,6 +34,10 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   strcpy((char *)self->name_class, class_name);
 
   self->key = private_creat_key(self->name_class);
+  if(!self->key){
+    private_free_interrupted(NULL, (void *[]){(char *)self->name_class, self->process_list, self}, 3);
+    return NULL;
+  }
 
   self->class_list = NULL;
   

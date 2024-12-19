@@ -7,7 +7,7 @@
 
 
 key_t private_generate_string_key(const char *key, pid_t hierarchy){
-  if(key == NULL || strlen(key) > 0 || hierarchy > 0){
+  if(key == NULL || !(strlen(key) > 0) || !(hierarchy > 0)){
     return 0;
   }
 

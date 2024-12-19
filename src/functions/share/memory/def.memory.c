@@ -2,23 +2,25 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <string.h>
 //silver_chain_scope_end
 
 
 
 
-void *private_memory_data_attach(MemoryShared *memory_shared){
+int private_memory_data_attach(MemoryShared *memory_shared){
   void *data = (void *)shmat(memory_shared->memory_location, NULL, 0);
   if(data == (void *)-1){
-    return NULL;
+    return -1;
   }
 
-  return data;
+  memory_shared->memory_shared->memoryShared = data;
+  return 1;
 }
 
 void private_close_memory(MemoryShared *memory_shared){
 
-  shmdt(memory_shared->memory_shared->memory);
+  shmdt(memory_shared->memory_shared->memoryShared);
 }
 
 ShmidDS *get_info_memory_location(MemoryShared *memory_shared){
@@ -34,7 +36,7 @@ void pull_memory(MemorySharedContent *self){
   
   private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
 
-  memcpy(self->memory, self->memoryShared, sizeof(self->memoryShared));//Lendo
+  config_memory(self, self->memoryShared, self->size_memoryShared);//Lendo
 
   private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
 
@@ -44,9 +46,28 @@ void push_memory(MemorySharedContent *self){
 
   private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
 
-  memcpy(self->memoryShared, self->memory, sizeof(self->memory));// Gravando
+  private_config_memory_share(self);// Gravando
 
   private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
+}
+
+void config_memory(MemorySharedContent *self, void *new_value, size_t size_value){
+
+  memset(self->memory, 0, self->size_memory);
+
+  self->size_memory = size_value + 1;
+
+  self->memory = (void *)realloc(self->memory, self->size_memory);
+
+  memcpy(self->memory, new_value , size_value);
+}
+
+void private_config_memory_share(MemorySharedContent *self){
+
+  memset(self->memoryShared, 0, self->size_memoryShared);
+
+  memcpy(self->memoryShared, self->memory, self->size_memory);
 
 }
 

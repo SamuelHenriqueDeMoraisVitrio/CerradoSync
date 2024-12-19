@@ -6,7 +6,7 @@
 //silver_chain_scope_end
 
 
-MemorySharedContent *private_new_MemorySharedContent(void *memory, key_t key);
+MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared);
 
 void private_free_MemorySharedContent(MemorySharedContent *self);
 

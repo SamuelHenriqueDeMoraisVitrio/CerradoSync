@@ -8,7 +8,7 @@
 
 Process *private_new_process(int size_stack){
 
-  Process *self = malloc(sizeof(Process));
+  Process *self = (Process *)malloc(sizeof(Process));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }

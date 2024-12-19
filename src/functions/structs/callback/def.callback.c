@@ -5,27 +5,31 @@
 //silver_chain_scope_end
 
 
-void add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
+int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
 
-  if(!callback_self || !add_arg){
-    return;
+  if(!callback_self || !add_arg || !callback_self->args){
+    return -1;
   }
 
-  callback_self->args->size_arguments++;
+  ArgumentsCallback *self = callback_self->args;
 
-  callback_self->args->arguments = (ArgumentCallback **)realloc(callback_self->args->arguments, sizeof(ArgumentCallback *) * (callback_self->args->size_arguments + 1));
-  if(callback_self->args->arguments == NULL){
-    callback_self->args->size_arguments--;
-    return;
+  self->size_arguments++;
+
+  self->arguments = (ArgumentCallback **)realloc(self->arguments, sizeof(ArgumentCallback *) * (self->size_arguments + 1));
+  if(!self->arguments){
+    self->size_arguments--;
+    return -2;
   }
 
-  callback_self->args->arguments[callback_self->args->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
-  if(callback_self->args->arguments == NULL){
-    callback_self->args->size_arguments--;
-    return;
+  self->arguments[self->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
+  if(!self->arguments[self->size_arguments - 1]){
+    self->size_arguments--;
+    return -3;
   }
   
-  callback_self->args->arguments[callback_self->args->size_arguments - 1] = add_arg;
+  self->arguments[self->size_arguments - 1] = add_arg;
+
+  return 1;
 }
 
 
@@ -52,7 +56,7 @@ ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_
     return NULL;
   }
 
-  memcpy(self->arg, arg, arg_size);
+  memcpy(self->arg, arg, arg_size + 1);
 
   return self;
 
@@ -70,6 +74,46 @@ void private_free_argument(ArgumentCallback *self){
   }
 }
 
+ArgumentsCallback *private_new_ArgumentsCallback(){
+  ArgumentsCallback *self = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
+  if(!private_free_interrupted(self, NULL, 0)){
+    return NULL;
+  }
+
+  self->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) + 1);
+  if(!private_free_interrupted(self->arguments, (void *[]){self}, 1)){
+    return NULL;
+  }
+
+  self->arguments[0] = (ArgumentCallback *)malloc(0);
+  if(!private_free_interrupted(self->arguments[0], (void *[]){self->arguments, self}, 2)){
+    return NULL;
+  }
+
+  self->size_arguments = 0;
+
+  return self;
+}
+
+void private_free_ArgumentsCallback(ArgumentsCallback *self){
+  if(self){
+  
+    if(self->arguments){
+
+      for(int i=0; i < self->size_arguments + 1; i++){
+        if(self->arguments[i] != NULL){
+          ArgumentCallback *argument = self->arguments[i];
+          private_free_argument(argument);
+        }
+      }
+
+      free(self->arguments);
+    }
+
+    free(self);
+  }
+}
+
 CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments)){
 
   if(!function || !process_father){
@@ -81,21 +125,11 @@ CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)
     return NULL;
   }
 
+  self->args = private_new_ArgumentsCallback();
+
   self->function_callback = function;
 
-  self->args = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
-  if(!private_free_interrupted(self->args, (void *[]){self}, 1)){
-    return NULL;
-  }
-
-  self->args->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *));
-  if(!private_free_interrupted(self->args->arguments, (void *[]){self->args, self}, 2)){
-    return NULL;
-  }
-
-  self->args->arguments[0] = (ArgumentCallback *)malloc(0);
-
-  self->args->size_arguments = 0;
+  self->memory = process_father->memory;
 
   return self;
 }
@@ -103,21 +137,8 @@ CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)
 void free_callback(CallbackProcess *self){
   if(self != NULL){
 
-    if(self->args != NULL){
-
-      if(self->args->arguments != NULL){
-
-        for(int i=0; i < self->args->size_arguments + 1; i++){
-          if(self->args->arguments[i] != NULL){
-            ArgumentCallback *argument = self->args->arguments[i];
-            private_free_argument(argument);
-          }
-        }
-        
-        free(self->args->arguments);
-      }
-      free(self->args);
-    }
+    private_free_ArgumentsCallback(self->args);
+    
     free(self);
   }
 }
