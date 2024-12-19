@@ -1,8 +1,8 @@
-# CerradoSyn Library Documentation
+# CerradoSync Library Documentation
 
 ## Overview
 
-**CerradoSyn** is a C library that provides an abstraction over the `clone` syscall for handling multiprocessing or shared threads. It allows safe shared memory management using semaphores, supporting both asynchronous and synchronous operations. This library is ideal for developers who need to build systems with precise control over shared memory and inter-process communication.
+**CerradoSync** is a C library that provides an abstraction over the `clone` syscall for handling multiprocessing or shared threads. It allows safe shared memory management using semaphores, supporting both asynchronous and synchronous operations. This library is ideal for developers who need to build systems with precise control over shared memory and inter-process communication.
 
 ---
 
@@ -17,16 +17,16 @@
 
 ## Installation
 
-To use CerradoSyn in your projects:
+To use CerradoSync in your projects:
 
 1. Include the library headers in your source code:
    ```c
-   #include "CerradoSyn.h"
+   #include "CerradoSync.h"
    ```
 2. compilation.
 
 ```bash
-  gcc -o my_program my_program.c -lCerradoSyn
+  gcc -o my_program my_program.c
 ```
 
 ---
@@ -35,7 +35,7 @@ To use CerradoSyn in your projects:
 
 ### Structures
 
-#### `CerradoSyn`
+#### `CerradoSync`
 - Represents the main structure for handling processes and shared memory.
 - **Constructor**: `new_CerradoSynStruct(const char *name, size_t max_memory_size)`
 
@@ -80,7 +80,7 @@ To use CerradoSyn in your projects:
 ## Example Usage
 
 ```c
-#include "CerradoSyn.h"
+#include "CerradoSync.h"
 
 int process_print_name(MemoryShared *memory, ArgumentsCallback *args) {
     const char *name = (const char *)args->arguments[0]->arg;
@@ -152,7 +152,7 @@ int main() {
 
 ## SHA_256
 ---
-(sha-256)[https://github.com/amosnier/sha-2]
+[sha-256](https://github.com/amosnier/sha-2)
 
 Zero Clause BSD License © 2021 Alain Mosnier
 

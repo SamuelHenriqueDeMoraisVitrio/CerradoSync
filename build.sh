@@ -1,3 +1,3 @@
 
-./CAmalgamator.out --file src/imports/imports.def.h  -o CerradoSyn.h
+./CAmalgamator.out --file src/imports/imports.def.h  -o CerradoSync.h
 
