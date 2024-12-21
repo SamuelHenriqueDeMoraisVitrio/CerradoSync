@@ -1,5 +1,5 @@
 #include "imports.imp.h"
-#ifndef silverchain_depG
-#define silverchain_depG
+#ifndef CerradoSync_depG
+#define CerradoSync_depG
 #include "../dependencies/depG.sha256.h"
 #endif

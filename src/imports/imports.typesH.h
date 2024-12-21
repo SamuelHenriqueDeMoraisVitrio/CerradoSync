@@ -1,5 +1,5 @@
 #include "imports.typesG.h"
-#ifndef silverchain_typesH
-#define silverchain_typesH
+#ifndef CerradoSync_typesH
+#define CerradoSync_typesH
 #include "../types/typesH.CerradoSyn.h"
 #endif

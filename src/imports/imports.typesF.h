@@ -1,5 +1,5 @@
 #include "imports.typesE.h"
-#ifndef silverchain_typesF
-#define silverchain_typesF
+#ifndef CerradoSync_typesF
+#define CerradoSync_typesF
 #include "../types/callbacks/typesF.arguments.h"
 #endif

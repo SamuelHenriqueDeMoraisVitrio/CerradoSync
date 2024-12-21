@@ -2,7 +2,6 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../imports/imports.typesF.h"
-#include <stddef.h>
 //silver_chain_scope_end
 
 

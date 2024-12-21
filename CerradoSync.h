@@ -1,5 +1,5 @@
-#ifndef silverchain_imp
-#define silverchain_imp
+#ifndef CerradoSync_imp
+#define CerradoSync_imp
 
 #define _GNU_SOURCE
 #include <sched.h>
@@ -21,8 +21,8 @@
 
 #endif
 
-#ifndef silverchain_depG
-#define silverchain_depG
+#ifndef CerradoSync_depG
+#define CerradoSync_depG
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -138,8 +138,8 @@ uint8_t *sha_256_close(struct Sha_256 *sha_256);
 
 #endif
 
-#ifndef silverchain_depH
-#define silverchain_depH
+#ifndef CerradoSync_depH
+#define CerradoSync_depH
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -374,8 +374,8 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 #endif
 
-#ifndef silverchain_mac
-#define silverchain_mac
+#ifndef CerradoSync_mac
+#define CerradoSync_mac
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -411,8 +411,8 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 #endif
 
-#ifndef silverchain_typesE
-#define silverchain_typesE
+#ifndef CerradoSync_typesE
+#define CerradoSync_typesE
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -455,8 +455,8 @@ typedef struct TrafficMemory_struct TrafficMemory;
 
 #endif
 
-#ifndef silverchain_typesF
-#define silverchain_typesF
+#ifndef CerradoSync_typesF
+#define CerradoSync_typesF
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -481,8 +481,8 @@ struct Argument_struct{
 
 #endif
 
-#ifndef silverchain_typesG
-#define silverchain_typesG
+#ifndef CerradoSync_typesG
+#define CerradoSync_typesG
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -506,7 +506,6 @@ struct CallbackProcess_struct{
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <stddef.h>
 //silver_chain_scope_end
 
 
@@ -577,8 +576,8 @@ struct TrafficMemory_struct{
 
 #endif
 
-#ifndef silverchain_typesH
-#define silverchain_typesH
+#ifndef CerradoSync_typesH
+#define CerradoSync_typesH
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -606,8 +605,8 @@ struct CerradoSynStruct{
 
 #endif
 
-#ifndef silverchain_dec
-#define silverchain_dec
+#ifndef CerradoSync_dec
+#define CerradoSync_dec
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -786,7 +785,6 @@ void private_delet_memory(MemoryShared *memory_shared);
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <sys/types.h>
 //silver_chain_scope_end
 
 
@@ -837,8 +835,8 @@ void private_free_process(Process *self);
 
 #endif
 
-#ifndef silverchain_def
-#define silverchain_def
+#ifndef CerradoSync_def
+#define CerradoSync_def
 
 //silver_chain_scope_start
 //mannaged by silver chain
@@ -913,7 +911,6 @@ key_t private_get_key(const char *key){
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <stdio.h>
 //silver_chain_scope_end
 
 int callback_config(void *arg){
@@ -1001,7 +998,6 @@ int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fla
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <string.h>
 //silver_chain_scope_end
 
 
@@ -1572,7 +1568,6 @@ void private_delet_memory(MemoryShared *memory_shared){
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <stddef.h>
 //silver_chain_scope_end
 
 

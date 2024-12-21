@@ -1,6 +1,6 @@
 #include "imports.typesH.h"
-#ifndef silverchain_dec
-#define silverchain_dec
+#ifndef CerradoSync_dec
+#define CerradoSync_dec
 #include "../functions/free_interrupted/dec.free_interrupted.h"
 #include "../functions/hash_class/hash_to_key-t/dec.sha.h"
 #include "../functions/process/clone/dec.clone.h"
