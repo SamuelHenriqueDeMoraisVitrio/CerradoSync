@@ -1,160 +1,253 @@
-# CerradoSync Library Documentation
+# CerradoSync
 
-## Overview
-
-**CerradoSync** is a C library that provides an abstraction over the `clone` syscall for handling multiprocessing or shared threads. It allows safe shared memory management using semaphores, supporting both asynchronous and synchronous operations. This library is ideal for developers who need to build systems with precise control over shared memory and inter-process communication.
+The `CerradoSync` library is designed for shared memory management and process synchronization in Linux systems. It provides abstractions for handling shared memory, traffic signals, callbacks, and process creation, simplifying the development of parallel systems.
 
 ---
 
-## Features
+## Table of Contents
 
-- **Process and Thread Management**: Leverage `clone` to create isolated or shared processes.
-- **Shared Memory Control**: Manage shared memory segments securely with semaphore mechanisms.
-- **Traffic Signal System**: Coordinate processes using a traffic signal system (`RED_TRAFFIC` and `GREEN_TRAFFIC`).
-- **Asynchronous and Synchronous Modes**: Flexibility to use either asynchronous or synchronous workflows.
+1. [Installation](#installation)  
+2. [Core Structures and Functions](#core-structures-and-functions)  
+3. [Basic Example](#basic-example)  
+4. [Advanced Example](#advanced-example)  
+5. [Function Reference](#function-reference)  
+6. [Notes and Best Practices](#notes-and-best-practices)
 
 ---
 
-## Installation
+## Inclusion
 
-To use CerradoSync in your projects:
+To use `CerradoSync`, ensure you are working on a Linux environment with support for shared memory and processes. A modern C compiler with pthread and real-time libraries is required.
 
-1. Include the library headers in your source code:
+1. Include the header file in your project:
    ```c
    #include "CerradoSync.h"
    ```
-2. compilation.
-  ```bash
-  gcc -o my_program my_program.c
-  ```
+
+2. Compile your code with the necessary flags:
+   ```bash
+   gcc -o main main.c
+   ```
 
 ---
 
-## API Reference
+## Core Structures and Functions
 
-### Structures
+### **Structures**
+- **`CerradoSync`**: The main process class structure.  
+- **`CerradoSync_MemoryShared`**: Structure for managing shared memory.  
+- **`CerradoSync_CallbackProcess`**: Represents a child process with callback functionality.  
+- **`CerradoSync_ArgumentCallback`**: Defines arguments to be passed to callbacks.
 
-#### `CerradoSync`
-- Represents the main structure for handling processes and shared memory.
-- **Constructor**: `new_CerradoSynStruct(const char *name, size_t max_memory_size)`
+### **Key Functions**
+- **Creation and Cleanup**:
+  - `new_CerradoSyncStruct(name, size)`: Creates the main process structure.
+  - `free_CerradoSync(struct)`: Releases all allocated memory for a process class.
 
-#### `MemoryShared`
-- Manages shared memory between processes.
+- **Shared Memory Management**:
+  - `CerradoSync_pull_memory(memory)`: Copies global memory into the static memory buffer.
+  - `CerradoSync_push_memory(memory)`: Copies static memory into the global memory buffer.
+  - `CerradoSync_config_memory(memory, value, size)`: Configures the static memory buffer.
 
-#### `CallbackProcess`
-- Represents a callback function for processes.
+- **Traffic Signals**:
+  - `CerradoSync_create_pointer_traffic(...)`: Creates a traffic signal point.
+  - `CerradoSync_signal_traffic(...)`: Sets the traffic signal to `RED_TRAFFIC` or `GREEN_TRAFFIC`.
+  - `CerradoSync_wait_traffic(...)`: Waits for a traffic signal to reach a specific state.
 
-### Functions
-
-#### Process and Memory Management
-
-- `int create_pointer_traffic(CerradoSyn *cerrado, const char *className, int initial_signal)`
-  - Create a traffic signal associated with a memory class.
-
-- `int create_process(CerradoSyn *cerrado, CallbackProcess *callback, void *user_data)`
-  - Create a new process.
-
-- `void config_memory(MemoryShared *memory, void *data, size_t size)`
-  - Configure memory with new data.
-
-- `void pull_memory(MemoryShared *memory)`
-  - Load the current shared memory state.
-
-- `void push_memory(MemoryShared *memory)`
-  - Save changes to shared memory.
-
-#### Callback Management
-
-- `CallbackProcess* new_CallbackProcess(CerradoSyn *cerrado, int (*callback_function)(MemoryShared*, ArgumentsCallback*))`
-  - Create a new callback process.
-
-- `ArgumentCallback* new_argument(const char *name, void *data, size_t size)`
-  - Create a new argument for a callback.
-
-- `void add_argument(CallbackProcess *callback, ArgumentCallback *arg)`
-  - Add an argument to a callback.
+- **Processes and Callbacks**:
+  - `CerradoSync_new_CallbackProcess(...)`: Creates a callback for a child process.
+  - `CerradoSync_create_process(...)`: Spawns a new child process.
+  - `CerradoSync_new_argument(...)`: Creates an argument to pass to callbacks.
+  - `CerradoSync_add_argument(...)`: Attaches an argument to a callback.
 
 ---
 
-## Example Usage
+## Basic Example
 
 ```c
 #include "CerradoSync.h"
 
-int process_print_name(MemoryShared *memory, ArgumentsCallback *args) {
-    const char *name = (const char *)args->arguments[0]->arg;
-    printf("\n\tname: %s\n", name);
-
-    signal_traffic(memory, "className", RED_TRAFFIC);
-
-    pull_memory(memory->memory_shared);
-    int *previous_value = (int *)memory->memory_shared->memory;
-    printf("\n\tProcess son with memory: %d\n", *previous_value);
-
-    char *full_name = "Samuel Henrique De Morias Vitrio";
-    config_memory(memory->memory_shared, full_name, strlen(full_name) + 1);
-    push_memory(memory->memory_shared);
-
-    signal_traffic(memory, "className", GREEN_TRAFFIC);
-    printf("\n\tNew Value: %s\n", (const char *)memory->memory_shared->memory);
-
-    return 0;
-}
-
 int main() {
-    CerradoSyn *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
-    if (!main) return 1;
+    // Create the main structure
+    CerradoSync *sync = new_CerradoSyncStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
+    CerradoSync_MemoryShared *memory = sync->memory;
 
-    MemoryShared *memory = main->memory;
-    pull_memory(memory->memory_shared);
-    int current_value = 450;
-    config_memory(memory->memory_shared, &current_value, sizeof(int));
-    push_memory(memory->memory_shared);
+    // Set an initial value in shared memory
+    int initialValue = 100;
+    CerradoSync_config_memory(memory, &initialValue, sizeof(int));
+    CerradoSync_push_memory(memory);
 
-    printf("\n\tParent: %d\n", (int)*((int *)memory->memory_shared->memory));
+    printf("Initial shared memory value: %d\n", *(int *)CerradoSync_getMemoryValue(memory));
 
-    create_pointer_traffic(main, "className", RED_TRAFFIC);
+    // Create a traffic signal
+    CerradoSync_create_pointer_traffic(sync, "exampleTraffic", RED_TRAFFIC);
+    CerradoSync_signal_traffic(memory, "exampleTraffic", GREEN_TRAFFIC);
 
-    CallbackProcess *callback = new_CallbackProcess(main, process_print_name);
+    // Update shared memory with a new value
+    int newValue = 200;
+    CerradoSync_config_memory(memory, &newValue, sizeof(int));
+    CerradoSync_push_memory(memory);
 
-    const char *name = "Samuel Henrique";
-    ArgumentCallback *name_arg = new_argument("name", (void *)name, strlen(name));
-    add_argument(callback, name_arg);
+    printf("Updated shared memory value: %d\n", *(int *)CerradoSync_getMemoryValue(memory));
 
-    create_process(main, callback, NULL);
-    free_callback(callback);
+    // Cleanup
+    free_CerradoSync(sync);
 
-    wait_traffic(memory, "className", GREEN_TRAFFIC);
-    pull_memory(memory->memory_shared);
-
-    printf("\n\tParent after: %s\n", (const char *)memory->memory_shared->memory);
-
-    printf("\n\tHello World!\n");
-    for (int i = 0; i < main->size_process; i++) {
-        pid_t temp_process = main->process_list[i]->process;
-        int status;
-        waitpid(temp_process, &status, 0);
-        printf("\n\tStatus: %d of process: %d\n", WIFEXITED(status), i);
-    }
-    printf("\n\tBye World\n");
-
-    free_CerradoSyn(main);
     return 0;
 }
 ```
 
 ---
 
-# License
+## Advanced Example
+
+```c
+#include "CerradoSync.h"
+
+// Callback function
+int callback_function(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *args) {
+    const char *receivedName = (const char *)args->arguments[0]->arg;
+
+    printf("Callback executed with name: %s\n", receivedName);
+
+    // Update static memory with a new value
+    int newValue = 999;
+    CerradoSync_config_memory(memory, &newValue, sizeof(int));
+    CerradoSync_push_memory(memory);
+
+    return 0;
+}
+
+int main() {
+    CerradoSync *sync = new_CerradoSyncStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
+    CerradoSync_MemoryShared *memory = sync->memory;
+
+    CerradoSync_pull_memory(memory);
+
+    // Create a callback process
+    CerradoSync_CallbackProcess *callback = CerradoSync_new_CallbackProcess(sync, callback_function);
+
+    const char *name = "John Doe";
+    CerradoSync_ArgumentCallback *arg = CerradoSync_new_argument("name", (void *)name, strlen(name));
+    CerradoSync_add_argument(callback, arg);
+
+    // Spawn the child process
+    CerradoSync_create_process(sync, callback, NULL);
+
+    // Wait for the traffic signal
+    CerradoSync_wait_traffic(memory, "exampleTraffic", GREEN_TRAFFIC);
+
+    // Cleanup and finalize
+    for (int i = 0; i < sync->size_process; i++) {
+        int status;
+        waitpid(sync->process_list[i]->process, &status, 0);
+    }
+
+    free_CerradoSync(sync);
+    return 0;
+}
+```
+
+## Complete Example:
+
+```c
+
+#include "CerradoSync.h"
+
+int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *args){
+
+  const char *name = (const char *)args->arguments[0]->arg;
+
+  printf("\n\tname: %s\n", name);
+
+  CerradoSync_signal_traffic(memory, "className", RED_TRAFFIC);//Sends a signal for traffic with name 'className' to be closed
+
+  CerradoSync_pull_memory(memory);
+
+  int *valorMemoryAnterior = (int *)CerradoSync_getMemoryValue(memory);
+
+  printf("\n\tProcess son with memory: %d\n", *valorMemoryAnterior);
+
+  char *meu_nomeCompleto = "Samuel Henrique De Morias Vitrio";
+  CerradoSync_config_memory(memory, meu_nomeCompleto, strlen(meu_nomeCompleto) + 1); //Updates static memory with the specified value
+
+  CerradoSync_push_memory(memory);
+
+  CerradoSync_signal_traffic(memory, "className", GREEN_TRAFFIC); //Sends a signal for traffic with name 'className' to be opened
+
+  printf("\n\tValor novo : %s\n", (const char *)memory->memory_shared->memory);
+
+  return 0;
+}
+
+int main(){
+
+  CerradoSync *main = new_CerradoSyncStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_); //create a class of process
+
+  CerradoSync_MemoryShared *memory = main->memory; //The memory structure that contains global memory and static memory to work with
+
+  CerradoSync_pull_memory(memory); //Update memory static
+  int valorAtual = 450;
+  CerradoSync_config_memory(memory, &valorAtual, sizeof(int)); //Assigns a value to static memory
+  CerradoSync_push_memory(memory); //Update global memory with static memory
+
+  printf("\n\tpai: %d\n", (int)*((int *)CerradoSync_getMemoryValue(memory))); //Get pointer of static memory value
+
+  CerradoSync_create_pointer_traffic(main, "className", RED_TRAFFIC); //Creates an initially blocked traffic point
+
+  CerradoSync_CallbackProcess *callback = CerradoSync_new_CallbackProcess(main, process_print_name);//Struct callback process
+
+  const char *name = "Samuel Henrique";
+  CerradoSync_ArgumentCallback *name_arg = CerradoSync_new_argument("teste", (void *)name, strlen(name));//A new argument for callback
+  CerradoSync_add_argument(callback, name_arg);//Assign argument for callback
+
+  CerradoSync_create_process(main, callback, NULL); //Create a process
+
+  CerradoSync_wait_traffic(memory, "className", GREEN_TRAFFIC); //Wait pointer traffic 'className' stay open
+  CerradoSync_pull_memory(memory); //Get the latest information from global memory and copy it to static memory
+
+  printf("\n\tpai depois: %s\n", (const char *)CerradoSync_getMemoryValue(memory));
+
+  printf("\n\tHello Word!\n");
+  for (int i = 0; i < main->size_process; i++) {
+    pid_t temp_process = main->process_list[i]->process;
+    int status;
+    waitpid(temp_process, &status, 0);
+    printf("\n\tstatus: %d of process: %d\n", WIFEXITED(status), i);
+  }
+  printf("\n\tBye Word\n");
+
+  free_CerradoSync(main);//Releases all allocated memory of the created process class
+
+  return 0;
+}
+```
 
 ---
 
-## SHA_256
+## Function Reference
+
+| **Function**                        | **Description**                                                                                  |
+|-------------------------------------|--------------------------------------------------------------------------------------------------|
+| `new_CerradoSyncStruct`             | Creates the main process structure.                                                             |
+| `free_CerradoSync`                  | Releases all allocated memory for the process class.                                            |
+| `CerradoSync_pull_memory`           | Copies global memory into the static memory buffer.                                             |
+| `CerradoSync_push_memory`           | Copies static memory into the global memory buffer.                                             |
+| `CerradoSync_config_memory`         | Updates the static memory buffer with a given value.                                            |
+| `CerradoSync_create_pointer_traffic`| Creates a named traffic signal with an initial state.                                           |
+| `CerradoSync_signal_traffic`        | Updates the state of a traffic signal to `RED_TRAFFIC` or `GREEN_TRAFFIC`.                      |
+| `CerradoSync_wait_traffic`          | Waits for a traffic signal to change to the specified state.                                    |
+| `CerradoSync_new_CallbackProcess`   | Creates a callback process.                                                                     |
+| `CerradoSync_new_argument`          | Creates an argument to pass to a callback.                                                      |
+| `CerradoSync_add_argument`          | Associates an argument with a callback.                                                        |
+| `CerradoSync_create_process`        | Spawns a new child process linked to a callback.                                                |
+
 ---
-[sha-256](https://github.com/amosnier/sha-2)
 
-Zero Clause BSD License © 2021 Alain Mosnier
+## Notes and Best Practices
 
-Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+- **Synchronization**: Always use traffic signals (`RED_TRAFFIC`, `GREEN_TRAFFIC`) to ensure safe inter-process communication.  
+- **Memory Management**: Use `CerradoSync_pull_memory` and `CerradoSync_push_memory` carefully to avoid inconsistent data.  
+- **Resource Cleanup**: Call `free_CerradoSync` at the end of your program to prevent memory leaks.  
+- **Thread Safety**: The library relies on thread-safe operations but requires proper usage in multithreaded environments.
 
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
