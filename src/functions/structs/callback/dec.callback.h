@@ -6,7 +6,7 @@
 
 
 
-CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments));
+CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments));
 
 CerradoSync_ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
 

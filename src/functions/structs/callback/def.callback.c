@@ -114,7 +114,7 @@ void private_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self){
   }
 }
 
-CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments)){
+CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments)){
 
   if(!function || !process_father){
     return NULL;

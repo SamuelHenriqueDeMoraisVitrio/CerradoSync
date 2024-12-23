@@ -94,7 +94,7 @@ void private_close_traffic(int id){
   semctl(id, 0, IPC_RMID);
 }
 
-int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer){
+int create_pointer_traffic(CerradoSync *self, const char *className, int initial_pointer){
   
   int result = -1;
   int number_of_traffics = 1;

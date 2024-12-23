@@ -6,7 +6,7 @@
 
 typedef struct private_CerradoSync_ProcessStruct CerradoSync_Process;
 
-typedef struct private_CerradoSyncStruct CerradoSyn;
+typedef struct private_CerradoSyncStruct CerradoSync;
 
 typedef struct private_CerradoSync_Arguments_struct CerradoSync_ArgumentsCallback;
 

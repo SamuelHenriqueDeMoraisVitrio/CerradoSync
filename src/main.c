@@ -38,7 +38,7 @@ int main(){
 
   int result = 0;
 
-  CerradoSyn *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
+  CerradoSync *main = new_CerradoSynStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
   if(!main){
     return 1;
   }

@@ -4,7 +4,7 @@
 #include "../../../imports/imports.dec.h"
 //silver_chain_scope_end
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
+CerradoSync *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
 
   static bool primary_run = true;
   if(primary_run){
@@ -12,7 +12,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   }
   primary_run = false;
 
-  CerradoSyn *self = malloc(sizeof(CerradoSyn));
+  CerradoSync *self = malloc(sizeof(CerradoSync));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -49,7 +49,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   return self;
 }
 
-void free_CerradoSyn(CerradoSyn *self){
+void free_CerradoSyn(CerradoSync *self){
 
   if(self != NULL){
 

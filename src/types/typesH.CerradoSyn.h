@@ -14,7 +14,8 @@ struct private_CerradoSyncStruct{
   size_t size_process;
   
   CerradoSync_MemoryShared *memory;
-  CerradoSyn *class_list;
+  CerradoSync *class_list;
+
 };
 
 
