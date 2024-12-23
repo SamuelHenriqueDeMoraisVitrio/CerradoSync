@@ -7,7 +7,7 @@
 
 
 
-int create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
       return -1;
   }
@@ -16,14 +16,14 @@ int create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callb
     return -1;
   }
 
-  CerradoSync_Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
+  CerradoSync_Process *new_process = private_CerradoSync_new_process(_SIZE_STACK_PROCESS_1MB_);
   if(!new_process){
     return -1;
   }
 
-  private_clone_process(new_process, callback, flags);
+  private_CerradoSync_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
-    private_free_process(new_process);
+    private_CerradoSync_free_process(new_process);
     return -1;
   }
 

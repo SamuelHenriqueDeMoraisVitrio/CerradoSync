@@ -6,7 +6,7 @@
 
 
 
-int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args){
+int private_CerradoSync_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args){
 
   if(arg_for_verify != NULL){
     return 1;

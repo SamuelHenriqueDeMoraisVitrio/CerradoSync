@@ -6,11 +6,11 @@
 
 
 
-key_t private_generate_string_key(const char *key, pid_t hierarchy);
+key_t private_CerradoSync_generate_string_key(const char *key, pid_t hierarchy);
 
-key_t private_creat_key(const char *key);
+key_t private_CerradoSync_creat_key(const char *key);
 
-key_t private_get_key(const char *key);
+key_t private_CerradoSync_get_key(const char *key);
 
 
 

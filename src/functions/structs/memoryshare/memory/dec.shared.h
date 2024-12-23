@@ -5,8 +5,8 @@
 //silver_chain_scope_end
 
 
-CerradoSync_MemorySharedContent *private_new_MemorySharedContent(CerradoSync_MemoryShared *memory_struct, size_t size_memoryShared);
+CerradoSync_MemorySharedContent *private_CerradoSync_new_MemorySharedContent(CerradoSync_MemoryShared *memory_struct, size_t size_memoryShared);
 
-void private_free_MemorySharedContent(CerradoSync_MemorySharedContent *self);
+void private_CerradoSync_free_MemorySharedContent(CerradoSync_MemorySharedContent *self);
 
 

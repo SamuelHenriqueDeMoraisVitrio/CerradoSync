@@ -6,9 +6,9 @@
 
 
 
-CerradoSync_Process *private_new_process(int size_stack);
+CerradoSync_Process *private_CerradoSync_new_process(int size_stack);
 
-void private_free_process(CerradoSync_Process *self);
+void private_CerradoSync_free_process(CerradoSync_Process *self);
 
 
 

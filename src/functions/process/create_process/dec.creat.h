@@ -5,6 +5,6 @@
 //silver_chain_scope_end
 
 
-int create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags);
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags);
 
 

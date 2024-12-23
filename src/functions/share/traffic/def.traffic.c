@@ -7,11 +7,11 @@
 
 
 
-int private_get_stats_traffic(int id, int index_get){
+int private_CerradoSync_get_stats_traffic(int id, int index_get){
   return semctl(id, index_get, GETVAL);
 }
 
-int private_init_traffic(key_t key){
+int private_CerradoSync_init_traffic(key_t key){
 
   int sem_share = semget(key, 2, IPC_CREAT | IPC_EXCL | 0666);
 
@@ -30,8 +30,8 @@ int private_init_traffic(key_t key){
   return sem_share;
 }
 
-int private_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key){
-  *key = private_creat_key(className);
+int private_CerradoSync_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key){
+  *key = private_CerradoSync_creat_key(className);
 
   int sem_point = semget(*key, 1, IPC_CREAT | IPC_EXCL | 0666);
   if(sem_point == -1){
@@ -47,14 +47,14 @@ int private_creat_a_wait_point(const char *className, int initial, int number_tr
   return sem_point;
 }
 
-int private_wait(key_t key, int number_traffics, int index_get, int color){
+int private_CerradoSync_wait(key_t key, int number_traffics, int index_get, int color){
 
   int sem_point = semget(key, number_traffics, 0);
   if(sem_point == -1){
     return -1;
   }
 
-  int point_stats = private_get_stats_traffic(sem_point, index_get);
+  int point_stats = private_CerradoSync_get_stats_traffic(sem_point, index_get);
   if(point_stats == -1){
     return -1;
   }
@@ -63,7 +63,7 @@ int private_wait(key_t key, int number_traffics, int index_get, int color){
     
     do{
 
-      point_stats = private_get_stats_traffic(sem_point, index_get);
+      point_stats = private_CerradoSync_get_stats_traffic(sem_point, index_get);
       if(point_stats == -1){
         return -1;
       }
@@ -79,7 +79,7 @@ int private_wait(key_t key, int number_traffics, int index_get, int color){
   return 0;
 }
 
-int private_signal_traffic(int id, int index_traffic, int color){
+int private_CerradoSync_signal_traffic(int id, int index_traffic, int color){
 
   struct sembuf operation = {0, color, 0};
 
@@ -90,11 +90,11 @@ int private_signal_traffic(int id, int index_traffic, int color){
   return id;
 }
 
-void private_close_traffic(int id){
+void private_CerradoSync_close_traffic(int id){
   semctl(id, 0, IPC_RMID);
 }
 
-int create_pointer_traffic(CerradoSync *self, const char *className, int initial_pointer){
+int CerradoSync_create_pointer_traffic(CerradoSync *self, const char *className, int initial_pointer){
   
   int result = -1;
   int number_of_traffics = 1;
@@ -107,7 +107,7 @@ int create_pointer_traffic(CerradoSync *self, const char *className, int initial
     initial_pointer = GREEN_TRAFFIC;
   }
 
-  if((result = private_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
+  if((result = private_CerradoSync_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
     return -1;
   }
 
@@ -134,23 +134,23 @@ int create_pointer_traffic(CerradoSync *self, const char *className, int initial
   return 1;
 }
 
-int wait_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
+int CerradoSync_wait_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory->pid);
+  key_t key = private_CerradoSync_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
 
-  if(private_wait(key, 1, 0, color) == -1){
+  if(private_CerradoSync_wait(key, 1, 0, color) == -1){
     return -1;
   }
 
   return 1;
 }
 
-int signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
+int CerradoSync_signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory->pid);
+  key_t key = private_CerradoSync_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
@@ -161,19 +161,19 @@ int signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int 
   }
 
   int result = -1;
-  if((result = private_get_stats_traffic(sem_point, 0)) == -1){
+  if((result = private_CerradoSync_get_stats_traffic(sem_point, 0)) == -1){
     return -1;
   }
 
   if(color == GREEN_TRAFFIC){
     if(result <= 0){
-      private_signal_traffic(sem_point, 0, 1);
+      private_CerradoSync_signal_traffic(sem_point, 0, 1);
       return 1;
     }
   }
   if(color == RED_TRAFFIC){
     if(result > 0){
-      private_signal_traffic(sem_point, 0, -1);
+      private_CerradoSync_signal_traffic(sem_point, 0, -1);
       return 1;
     }
   }

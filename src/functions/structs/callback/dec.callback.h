@@ -6,19 +6,19 @@
 
 
 
-CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments));
+CerradoSync_CallbackProcess *CerradoSync_new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments));
 
-CerradoSync_ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
+CerradoSync_ArgumentCallback *CerradoSync_new_argument(const char *name_argument, void *arg, size_t arg_size);
 
-void private_free_argument(CerradoSync_ArgumentCallback *self);
+void private_CerradoSync_free_argument(CerradoSync_ArgumentCallback *self);
 
-void private_free_callback(CerradoSync_CallbackProcess *self);
+void private_CerradoSync_free_callback(CerradoSync_CallbackProcess *self);
 
-int add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg);
+int CerradoSync_add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg);
 
-CerradoSync_ArgumentsCallback *private_new_ArgumentsCallback();
+CerradoSync_ArgumentsCallback *private_CerradoSync_new_ArgumentsCallback();
 
-void private_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self);
+void private_CerradoSync_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self);
 
 
 

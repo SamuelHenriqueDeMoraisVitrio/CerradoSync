@@ -6,9 +6,9 @@
 
 
 
-CerradoSync_MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
+CerradoSync_MemoryShared *private_CerradoSync_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
 
-void private_delet_memory(CerradoSync_MemoryShared *memory_shared);
+void private_CerradoSync_delet_memory(CerradoSync_MemoryShared *memory_shared);
 
 
 

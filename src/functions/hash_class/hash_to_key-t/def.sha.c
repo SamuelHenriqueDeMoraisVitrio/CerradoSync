@@ -6,7 +6,7 @@
 
 
 
-key_t private_generate_string_key(const char *key, pid_t hierarchy){
+key_t private_CerradoSync_generate_string_key(const char *key, pid_t hierarchy){
   if(key == NULL || !(strlen(key) > 0) || !(hierarchy > 0)){
     return 0;
   }
@@ -28,12 +28,12 @@ key_t private_generate_string_key(const char *key, pid_t hierarchy){
   return numeric_key;
 }
 
-key_t private_creat_key(const char *key){
-  return private_generate_string_key(key, getpid());
+key_t private_CerradoSync_creat_key(const char *key){
+  return private_CerradoSync_generate_string_key(key, getpid());
 }
 
-key_t private_get_key(const char *key){
-  return private_generate_string_key(key, getppid());
+key_t private_CerradoSync_get_key(const char *key){
+  return private_CerradoSync_generate_string_key(key, getppid());
 }
 
 
