@@ -28,7 +28,6 @@ CerradoSync_MemoryShared *private_CerradoSync_new_MemorySahred_struct(const char
     return NULL;
   }
 
-
   self->memory_shared = private_CerradoSync_new_MemorySharedContent(self, size_max_traffic);
   if(!self->memory_shared){
     shmctl(self->memory_location, IPC_RMID, NULL);

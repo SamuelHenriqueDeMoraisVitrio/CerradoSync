@@ -59,7 +59,7 @@ CerradoSync_TrafficPointerObject *private_CerradoSync_new_TrafficPointerObject(c
 
 CerradoSync_TrafficPointersList *private_CerradoSync_new_TrafficPointersList(){
 
-  CerradoSync_TrafficPointersList *self = (CerradoSync_TrafficPointersList *)calloc(1, sizeof(CerradoSync_TrafficPointersList));
+  CerradoSync_TrafficPointersList *self = (CerradoSync_TrafficPointersList *)malloc(sizeof(CerradoSync_TrafficPointersList) + 1);
   if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }

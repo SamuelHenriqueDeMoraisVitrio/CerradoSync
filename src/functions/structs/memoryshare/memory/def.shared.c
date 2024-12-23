@@ -36,7 +36,7 @@ CerradoSync_MemorySharedContent *private_CerradoSync_new_MemorySharedContent(Cer
     return NULL;
   }
 
-  memcpy(self->memory, self->memoryShared, self->size_memoryShared);
+  memcpy(self->memory, self->memoryShared, self->size_memory);
 
   return self;
 }

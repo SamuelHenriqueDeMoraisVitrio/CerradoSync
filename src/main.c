@@ -27,8 +27,6 @@ int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCa
 
   CerradoSync_signal_traffic(memory, "className", GREEN_TRAFFIC);
 
-  printf("aq");
-
   printf("\n\tValor novo : %s\n", (const char *)memory->memory_shared->memory);
 
   return 0;
@@ -37,7 +35,6 @@ int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCa
 int main(){
 
   CerradoSync *main = new_CerradoSyncStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_);
-  return 1;
 
   CerradoSync_MemoryShared *memory = main->memory;
   CerradoSync_pull_memory(memory->memory_shared);
