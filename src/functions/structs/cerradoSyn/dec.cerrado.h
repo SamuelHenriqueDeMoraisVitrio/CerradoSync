@@ -9,7 +9,7 @@
 
 CerradoSync *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic);
 
-void free_CerradoSyn(CerradoSync *self);
+void free_CerradoSync(CerradoSync *self);
 
 
 

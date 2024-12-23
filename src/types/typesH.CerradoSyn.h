@@ -2,6 +2,7 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../imports/imports.typesG.h"
+#include <stddef.h>
 //silver_chain_scope_end
 
 
@@ -15,6 +16,9 @@ struct private_CerradoSyncStruct{
   
   CerradoSync_MemoryShared *memory;
   CerradoSync *class_list;
+
+  CerradoSync_CallbackProcess **callbacks;
+  size_t size_list_callbacks;
 
 };
 

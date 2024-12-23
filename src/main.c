@@ -60,7 +60,6 @@ int main(){
   add_argument(callback, name_arg);
 
   create_process(main, callback, NULL);
-  free_callback(callback);
 
   wait_traffic(memory, "className", GREEN_TRAFFIC);
   pull_memory(memory->memory_shared);
@@ -76,7 +75,7 @@ int main(){
   }
   printf("\n\tBye Word\n");
 
-  free_CerradoSyn(main);
+  free_CerradoSync(main);
 
   return 0;
 }

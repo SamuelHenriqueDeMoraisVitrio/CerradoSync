@@ -12,7 +12,7 @@ CerradoSync_ArgumentCallback *new_argument(const char *name_argument, void *arg,
 
 void private_free_argument(CerradoSync_ArgumentCallback *self);
 
-void free_callback(CerradoSync_CallbackProcess *self);
+void private_free_callback(CerradoSync_CallbackProcess *self);
 
 int add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg);
 

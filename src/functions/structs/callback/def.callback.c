@@ -2,6 +2,8 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <stddef.h>
+#include <stdlib.h>
 //silver_chain_scope_end
 
 
@@ -120,21 +122,35 @@ CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSync *process_father, in
     return NULL;
   }
 
-  CerradoSync_CallbackProcess *self = (CerradoSync_CallbackProcess *)malloc(sizeof(CerradoSync_CallbackProcess));
+  size_t size_elements = process_father->size_list_callbacks;
+  CerradoSync_CallbackProcess **callbacks = process_father->callbacks;
+
+  CerradoSync_CallbackProcess **self = (CerradoSync_CallbackProcess **)realloc(callbacks, sizeof(CerradoSync_CallbackProcess *) * (size_elements + 2));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
-  self->args = private_new_ArgumentsCallback();
+  self[size_elements] = (CerradoSync_CallbackProcess *)malloc(sizeof(CerradoSync_CallbackProcess));
+  if(!private_free_interrupted(self[size_elements], (void *[]){self}, 1)){
+    return NULL;
+  }
 
-  self->function_callback = function;
+  self[size_elements]->args = private_new_ArgumentsCallback();
+  if(!private_free_interrupted(self[size_elements]->args, (void *[]){self[size_elements], self}, 2)){
+    return NULL;
+  }
 
-  self->memory = process_father->memory;
+  self[size_elements]->function_callback = function;
 
-  return self;
+  self[size_elements]->memory = process_father->memory;
+
+  process_father->size_list_callbacks = size_elements + 1;
+  process_father->callbacks = self;
+
+  return process_father->callbacks[size_elements];
 }
 
-void free_callback(CerradoSync_CallbackProcess *self){
+void private_free_callback(CerradoSync_CallbackProcess *self){
   if(self != NULL){
 
     private_free_ArgumentsCallback(self->args);

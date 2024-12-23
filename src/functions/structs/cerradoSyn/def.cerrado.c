@@ -2,6 +2,7 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <stdlib.h>
 //silver_chain_scope_end
 
 CerradoSync *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
@@ -40,7 +41,14 @@ CerradoSync *new_CerradoSynStruct(const char *class_name, size_t size_max_memory
   }
 
   self->class_list = NULL;
-  
+
+  self->callbacks = (CerradoSync_CallbackProcess **)malloc(sizeof(CerradoSync_CallbackProcess *));
+  if(!private_free_interrupted(self->callbacks, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+    return NULL;
+  }
+
+  self->size_list_callbacks = 0;
+
   self->memory = private_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
   if(!private_free_interrupted((CerradoSync_MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
     return NULL;
@@ -49,7 +57,7 @@ CerradoSync *new_CerradoSynStruct(const char *class_name, size_t size_max_memory
   return self;
 }
 
-void free_CerradoSyn(CerradoSync *self){
+void free_CerradoSync(CerradoSync *self){
 
   if(self != NULL){
 
@@ -65,6 +73,15 @@ void free_CerradoSyn(CerradoSync *self){
 
     if(self->name_class != NULL){
       free((char *)self->name_class);
+    }
+
+    if(self->callbacks){
+      for(int i = 0; i < self->size_list_callbacks + 1; i++){
+        if(self->callbacks[i]){
+          private_free_callback(self->callbacks[i]);
+        }
+      }
+      free(self->callbacks);
     }
 
     if(self->memory != NULL){
