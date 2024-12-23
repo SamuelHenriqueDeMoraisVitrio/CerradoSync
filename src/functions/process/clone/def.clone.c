@@ -11,7 +11,7 @@ int private_CerradoSync_callback_config(void *arg){
   CerradoSync_MemoryShared *memory_argument_0 = (CerradoSync_MemoryShared *)struct_arg->memory;
   private_CerradoSync_memory_data_attach(memory_argument_0);
 
-  CerradoSync_pull_memory(memory_argument_0->memory_shared);
+  CerradoSync_pull_memory(memory_argument_0);
 
   int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
   function_callback = struct_arg->function_callback;

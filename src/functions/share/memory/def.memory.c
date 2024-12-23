@@ -30,17 +30,21 @@ int CerradoSync_get_info_memory_location(CerradoSync_MemoryShared *memory_shared
   return 1;
 }
 
-void CerradoSync_pull_memory(CerradoSync_MemorySharedContent *self){
+void CerradoSync_pull_memory(CerradoSync_MemoryShared *self_shared){
+
+  CerradoSync_MemorySharedContent *self = self_shared->memory_shared;
   
   private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
 
-  CerradoSync_config_memory(self, self->memoryShared, self->size_memoryShared);//Lendo
+  CerradoSync_config_memory(self_shared, self->memoryShared, self->size_memoryShared);//Lendo
 
   private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
 
 }
 
-void CerradoSync_push_memory(CerradoSync_MemorySharedContent *self){
+void CerradoSync_push_memory(CerradoSync_MemoryShared *self_shared){
+
+  CerradoSync_MemorySharedContent *self = self_shared->memory_shared;
 
   private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
 
@@ -50,7 +54,9 @@ void CerradoSync_push_memory(CerradoSync_MemorySharedContent *self){
 
 }
 
-void CerradoSync_config_memory(CerradoSync_MemorySharedContent *self, void *new_value, size_t size_value){
+void CerradoSync_config_memory(CerradoSync_MemoryShared *self_shared, void *new_value, size_t size_value){
+
+  CerradoSync_MemorySharedContent *self = self_shared->memory_shared;
 
   memset(self->memory, 0, self->size_memory);
 
@@ -67,6 +73,10 @@ void private_CerradoSync_config_memory_share(CerradoSync_MemorySharedContent *se
 
   memcpy(self->memoryShared, self->memory, self->size_memory);
 
+}
+
+void *CerradoSync_getMemoryValue(CerradoSync_MemoryShared *memory){
+  return memory->memory_shared->memory;
 }
 
 

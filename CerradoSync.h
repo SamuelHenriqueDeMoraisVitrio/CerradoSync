@@ -386,8 +386,6 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 
 #define _SIZE_STACK_PROCESS_1MB_ 1024 * 1024 // 1mb
 
-#define _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_ 1024 // 1kb
-
 #define _WRITE_AND_READ_ 0666 // Read and write permission
 
 #define _CONFIG_SHMGET_PERMISSIONS_ _WRITE_AND_READ_ | IPC_CREAT | IPC_EXCL // shmget configuration function
@@ -400,6 +398,7 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 //silver_chain_scope_end
 
 
+#define _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_ 1024 // 1kb
 
 #define GREEN_TRAFFIC 1
 #define RED_TRAFFIC 0
@@ -431,25 +430,25 @@ typedef struct shmid_ds ShmidDS;
 
 //silver_chain_scope_end
 
-typedef struct ProcessStruct Process;
+typedef struct private_CerradoSync_ProcessStruct CerradoSync_Process;
 
-typedef struct CerradoSynStruct CerradoSyn;
+typedef struct private_CerradoSyncStruct CerradoSync;
 
-typedef struct Arguments_struct ArgumentsCallback;
+typedef struct private_CerradoSync_Arguments_struct CerradoSync_ArgumentsCallback;
 
-typedef struct Argument_struct ArgumentCallback;
+typedef struct private_CerradoSync_Argument_struct CerradoSync_ArgumentCallback;
 
-typedef struct CallbackProcess_struct CallbackProcess;
+typedef struct private_CerradoSync_CallbackProcess_struct CerradoSync_CallbackProcess;
 
-typedef struct MemorySharedContent_struct MemorySharedContent;
+typedef struct private_CerradoSync_MemorySharedContent_struct CerradoSync_MemorySharedContent;
 
-typedef struct MemoryShared_struct MemoryShared;
+typedef struct private_CerradoSync_MemoryShared_struct CerradoSync_MemoryShared;
 
-typedef struct TrafficPointersList_struct TrafficPointersList;
+typedef struct private_CerradoSync_TrafficPointersList_struct CerradoSync_TrafficPointersList;
 
-typedef struct TrafficPointerObject_struct TrafficPointerObject;
+typedef struct private_CerradoSync_TrafficPointerObject_struct CerradoSync_TrafficPointerObject;
 
-typedef struct TrafficMemory_struct TrafficMemory;
+typedef struct private_CerradoSync_TrafficMemory_struct CerradoSync_TrafficMemory;
 
 
 
@@ -465,12 +464,12 @@ typedef struct TrafficMemory_struct TrafficMemory;
 
 
 
-struct Arguments_struct{
+struct private_CerradoSync_Arguments_struct{
   int size_arguments;
-  ArgumentCallback **arguments;
+  CerradoSync_ArgumentCallback **arguments;
 };
 
-struct Argument_struct{
+struct private_CerradoSync_Argument_struct{
   void *arg;
   const char *name_argument;
 };
@@ -493,10 +492,10 @@ struct Argument_struct{
 
 
 
-struct CallbackProcess_struct{
-  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
-  ArgumentsCallback *args;
-  MemoryShared *memory;
+struct private_CerradoSync_CallbackProcess_struct{
+  int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
+  CerradoSync_ArgumentsCallback *args;
+  CerradoSync_MemoryShared *memory;
 };
 
 
@@ -509,20 +508,20 @@ struct CallbackProcess_struct{
 //silver_chain_scope_end
 
 
-struct MemorySharedContent_struct{
+struct private_CerradoSync_MemorySharedContent_struct{
   void *memoryShared;
   void *memory;
   size_t size_memory;
   size_t size_memoryShared;
-  TrafficMemory *traffic;
+  CerradoSync_TrafficMemory *traffic;
 };
 
-struct MemoryShared_struct{
-  MemorySharedContent *memory_shared;
+struct private_CerradoSync_MemoryShared_struct{
+  CerradoSync_MemorySharedContent *memory_shared;
   key_t key;
   pid_t pid;
   int memory_location;
-  TrafficPointersList *traffic;
+  CerradoSync_TrafficPointersList *traffic;
 };
 
 
@@ -535,7 +534,7 @@ struct MemoryShared_struct{
 //silver_chain_scope_end
 
 
-struct ProcessStruct{
+struct private_CerradoSync_ProcessStruct{
   pid_t process;
   void *stack;
   int size_stack;
@@ -553,19 +552,19 @@ struct ProcessStruct{
 
 //silver_chain_scope_end
 
-struct TrafficPointerObject_struct{
+struct private_CerradoSync_TrafficPointerObject_struct{
   int traffic_ID;
   int number_traffics;
   key_t key;
   const char *nameClass;
 };
 
-struct TrafficPointersList_struct{
+struct private_CerradoSync_TrafficPointersList_struct{
   int size_elements;
-  TrafficPointerObject **semID;
+  CerradoSync_TrafficPointerObject **semID;
 };
 
-struct TrafficMemory_struct{
+struct private_CerradoSync_TrafficMemory_struct{
   int trafficID;
   key_t key;
 };
@@ -585,16 +584,20 @@ struct TrafficMemory_struct{
 //silver_chain_scope_end
 
 
-struct CerradoSynStruct{
+struct private_CerradoSyncStruct{
   int pid_father;
   const char *name_class;
   key_t key;
 
-  Process **process_list;
+  CerradoSync_Process **process_list;
   size_t size_process;
   
-  MemoryShared *memory;
-  CerradoSyn *class_list;
+  CerradoSync_MemoryShared *memory;
+  CerradoSync *class_list;
+
+  CerradoSync_CallbackProcess **callbacks;
+  size_t size_list_callbacks;
+
 };
 
 
@@ -614,7 +617,7 @@ struct CerradoSynStruct{
 //silver_chain_scope_end
 
 
-int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args);
+int private_CerradoSync_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args);
 
 
 
@@ -628,61 +631,11 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
 
 
 
-key_t private_generate_string_key(const char *key, pid_t hierarchy);
+key_t private_CerradoSync_generate_string_key(const char *key, pid_t hierarchy);
 
-key_t private_creat_key(const char *key);
+key_t private_CerradoSync_creat_key(const char *key);
 
-key_t private_get_key(const char *key);
-
-
-
-
-
-//silver_chain_scope_start
-//mannaged by silver chain
-
-//silver_chain_scope_end
-
-
-
-int private_clone_process(Process *process, CallbackProcess *callback, int *flags);
-
-
-
-
-
-//silver_chain_scope_start
-//mannaged by silver chain
-
-//silver_chain_scope_end
-
-
-int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags);
-
-
-
-
-//silver_chain_scope_start
-//mannaged by silver chain
-
-//silver_chain_scope_end
-
-
-
-int private_memory_data_attach(MemoryShared *memory_shared);
-
-ShmidDS *get_info_memory_location(MemoryShared *memory_shared);
-
-void private_close_memory(MemoryShared *memory_shared);
-
-void pull_memory(MemorySharedContent *self);
-
-void push_memory(MemorySharedContent *self);
-
-void config_memory(MemorySharedContent *self, void *new_value, size_t size_value);
-
-void private_config_memory_share(MemorySharedContent *self);
-
+key_t private_CerradoSync_get_key(const char *key);
 
 
 
@@ -695,28 +648,43 @@ void private_config_memory_share(MemorySharedContent *self);
 
 
 
-int private_get_stats_traffic(int id, int index_get);
-
-int private_init_traffic(key_t key);
-
-int private_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key);
-
-int private_wait(key_t key, int number_traffics, int index_get, int color);
-
-int private_signal_traffic(int id, int index_traffic, int color);
-
-void private_close_traffic(int id);
-
-int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer);
-
-int wait_traffic(MemoryShared *memory, const char *className, int color);
-
-int signal_traffic(MemoryShared *memory, const char *className, int color);
+int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags);
 
 
 
 
 
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags);
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+int private_CerradoSync_memory_data_attach(CerradoSync_MemoryShared *memory_shared);
+
+int CerradoSync_get_info_memory_location(CerradoSync_MemoryShared *memory_shared, ShmidDS *shmInfo);
+
+void private_CerradoSync_close_memory(CerradoSync_MemoryShared *memory_shared);
+
+void CerradoSync_pull_memory(CerradoSync_MemorySharedContent *self);
+
+void CerradoSync_push_memory(CerradoSync_MemorySharedContent *self);
+
+void CerradoSync_config_memory(CerradoSync_MemorySharedContent *self, void *new_value, size_t size_value);
+
+void private_CerradoSync_config_memory_share(CerradoSync_MemorySharedContent *self);
 
 
 
@@ -730,19 +698,27 @@ int signal_traffic(MemoryShared *memory, const char *className, int color);
 
 
 
-CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments));
+int private_CerradoSync_get_stats_traffic(int id, int index_get);
 
-ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size);
+int private_CerradoSync_init_traffic(key_t key);
 
-void private_free_argument(ArgumentCallback *self);
+int private_CerradoSync_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key);
 
-void free_callback(CallbackProcess *self);
+int private_CerradoSync_wait(key_t key, int number_traffics, int index_get, int color);
 
-int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg);
+int private_CerradoSync_signal_traffic(int id, int index_traffic, int color);
 
-ArgumentsCallback *private_new_ArgumentsCallback();
+void private_CerradoSync_close_traffic(int id);
 
-void private_free_ArgumentsCallback(ArgumentsCallback *self);
+int CerradoSync_create_pointer_traffic(CerradoSync *self, const char *className, int initial_pointer);
+
+int CerradoSync_wait_traffic(CerradoSync_MemoryShared *memory, const char *className, int color);
+
+int CerradoSync_signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int color);
+
+
+
+
 
 
 
@@ -757,10 +733,37 @@ void private_free_ArgumentsCallback(ArgumentsCallback *self);
 
 
 
+CerradoSync_CallbackProcess *CerradoSync_new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments));
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic);
+CerradoSync_ArgumentCallback *CerradoSync_new_argument(const char *name_argument, void *arg, size_t arg_size);
 
-void free_CerradoSyn(CerradoSyn *self);
+void private_CerradoSync_free_argument(CerradoSync_ArgumentCallback *self);
+
+void private_CerradoSync_free_callback(CerradoSync_CallbackProcess *self);
+
+int CerradoSync_add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg);
+
+CerradoSync_ArgumentsCallback *private_CerradoSync_new_ArgumentsCallback();
+
+void private_CerradoSync_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self);
+
+
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+
+CerradoSync *new_CerradoSyncStruct(const char *class_name, size_t size_max_memory_traffic);
+
+void free_CerradoSync(CerradoSync *self);
 
 
 
@@ -774,45 +777,9 @@ void free_CerradoSyn(CerradoSyn *self);
 
 
 
-MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
+CerradoSync_MemoryShared *private_CerradoSync_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic);
 
-void private_delet_memory(MemoryShared *memory_shared);
-
-
-
-
-
-//silver_chain_scope_start
-//mannaged by silver chain
-
-//silver_chain_scope_end
-
-
-MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared);
-
-void private_free_MemorySharedContent(MemorySharedContent *self);
-
-
-
-
-//silver_chain_scope_start
-//mannaged by silver chain
-
-//silver_chain_scope_end
-
-
-
-TrafficMemory *private_new_TrafficMemory(key_t key);
-
-TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
-
-TrafficPointersList *private_new_TrafficPointersList();
-
-void private_free_TrafficPointerObject(TrafficPointerObject *self);
-
-void private_free_TrafficPointersList(TrafficPointersList *self);
-
-void private_free_traffic(TrafficMemory *self);
+void private_CerradoSync_delet_memory(CerradoSync_MemoryShared *memory_shared);
 
 
 
@@ -824,10 +791,46 @@ void private_free_traffic(TrafficMemory *self);
 //silver_chain_scope_end
 
 
+CerradoSync_MemorySharedContent *private_CerradoSync_new_MemorySharedContent(CerradoSync_MemoryShared *memory_struct, size_t size_memoryShared);
 
-Process *private_new_process(int size_stack);
+void private_CerradoSync_free_MemorySharedContent(CerradoSync_MemorySharedContent *self);
 
-void private_free_process(Process *self);
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+CerradoSync_TrafficMemory *private_CerradoSync_new_TrafficMemory(key_t key);
+
+CerradoSync_TrafficPointerObject *private_CerradoSync_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
+
+CerradoSync_TrafficPointersList *private_CerradoSync_new_TrafficPointersList();
+
+void private_CerradoSync_free_TrafficPointerObject(CerradoSync_TrafficPointerObject *self);
+
+void private_CerradoSync_free_TrafficPointersList(CerradoSync_TrafficPointersList *self);
+
+void private_CerradoSync_free_traffic(CerradoSync_TrafficMemory *self);
+
+
+
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+
+
+CerradoSync_Process *private_CerradoSync_new_process(int size_stack);
+
+void private_CerradoSync_free_process(CerradoSync_Process *self);
 
 
 
@@ -845,7 +848,7 @@ void private_free_process(Process *self);
 
 
 
-int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args){
+int private_CerradoSync_free_interrupted(void *arg_for_verify, void **args_for_free, size_t size_args){
 
   if(arg_for_verify != NULL){
     return 1;
@@ -872,7 +875,7 @@ int private_free_interrupted(void *arg_for_verify, void **args_for_free, size_t 
 
 
 
-key_t private_generate_string_key(const char *key, pid_t hierarchy){
+key_t private_CerradoSync_generate_string_key(const char *key, pid_t hierarchy){
   if(key == NULL || !(strlen(key) > 0) || !(hierarchy > 0)){
     return 0;
   }
@@ -894,12 +897,12 @@ key_t private_generate_string_key(const char *key, pid_t hierarchy){
   return numeric_key;
 }
 
-key_t private_creat_key(const char *key){
-  return private_generate_string_key(key, getpid());
+key_t private_CerradoSync_creat_key(const char *key){
+  return private_CerradoSync_generate_string_key(key, getpid());
 }
 
-key_t private_get_key(const char *key){
-  return private_generate_string_key(key, getppid());
+key_t private_CerradoSync_get_key(const char *key){
+  return private_CerradoSync_generate_string_key(key, getppid());
 }
 
 
@@ -913,27 +916,27 @@ key_t private_get_key(const char *key){
 
 //silver_chain_scope_end
 
-int callback_config(void *arg){
+int private_CerradoSync_callback_config(void *arg){
 
-  CallbackProcess *struct_arg = (CallbackProcess *)arg;
+  CerradoSync_CallbackProcess *struct_arg = (CerradoSync_CallbackProcess *)arg;
 
-  MemoryShared *memory_argument_0 = (MemoryShared *)struct_arg->memory;
-  private_memory_data_attach(memory_argument_0);
+  CerradoSync_MemoryShared *memory_argument_0 = (CerradoSync_MemoryShared *)struct_arg->memory;
+  private_CerradoSync_memory_data_attach(memory_argument_0);
 
-  pull_memory(memory_argument_0->memory_shared);
+  CerradoSync_pull_memory(memory_argument_0->memory_shared);
 
-  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
+  int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
   function_callback = struct_arg->function_callback;
   int var_return = function_callback(memory_argument_0, struct_arg->args);
 
-  private_close_memory(memory_argument_0);
+  private_CerradoSync_close_memory(memory_argument_0);
 
   return var_return;
 }
 
-int private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags){
 
-  pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
+  pid_t pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 
   if(pid_process == -1){
     return -1;
@@ -958,7 +961,7 @@ int private_clone_process(Process *process, CallbackProcess *callback, int *flag
 
 
 
-int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
       return -1;
   }
@@ -967,20 +970,20 @@ int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fla
     return -1;
   }
 
-  Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
+  CerradoSync_Process *new_process = private_CerradoSync_new_process(_SIZE_STACK_PROCESS_1MB_);
   if(!new_process){
     return -1;
   }
 
-  private_clone_process(new_process, callback, flags);
+  private_CerradoSync_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
-    private_free_process(new_process);
+    private_CerradoSync_free_process(new_process);
     return -1;
   }
 
   main_process->size_process++;
 
-  main_process->process_list = (Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(Process *));
+  main_process->process_list = (CerradoSync_Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(CerradoSync_Process *));
   if(!main_process->process_list){
     return -1;
   }
@@ -1003,7 +1006,7 @@ int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fla
 
 
 
-int private_memory_data_attach(MemoryShared *memory_shared){
+int private_CerradoSync_memory_data_attach(CerradoSync_MemoryShared *memory_shared){
   void *data = (void *)shmat(memory_shared->memory_location, NULL, 0);
   if(data == (void *)-1){
     return -1;
@@ -1013,41 +1016,40 @@ int private_memory_data_attach(MemoryShared *memory_shared){
   return 1;
 }
 
-void private_close_memory(MemoryShared *memory_shared){
+void private_CerradoSync_close_memory(CerradoSync_MemoryShared *memory_shared){
 
   shmdt(memory_shared->memory_shared->memoryShared);
 }
 
-ShmidDS *get_info_memory_location(MemoryShared *memory_shared){
-  ShmidDS *shmInfo;
+int CerradoSync_get_info_memory_location(CerradoSync_MemoryShared *memory_shared, ShmidDS *shmInfo){
   if(shmctl(memory_shared->memory_location, IPC_STAT, shmInfo) == -1){
-    return NULL;
+    return -1;
   }
 
-  return shmInfo;
+  return 1;
 }
 
-void pull_memory(MemorySharedContent *self){
+void CerradoSync_pull_memory(CerradoSync_MemorySharedContent *self){
   
-  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+  private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
 
-  config_memory(self, self->memoryShared, self->size_memoryShared);//Lendo
+  CerradoSync_config_memory(self, self->memoryShared, self->size_memoryShared);//Lendo
 
-  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
-
-}
-
-void push_memory(MemorySharedContent *self){
-
-  private_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
-
-  private_config_memory_share(self);// Gravando
-
-  private_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+  private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
 
 }
 
-void config_memory(MemorySharedContent *self, void *new_value, size_t size_value){
+void CerradoSync_push_memory(CerradoSync_MemorySharedContent *self){
+
+  private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, -1);// pedindo ascesso à memoria;
+
+  private_CerradoSync_config_memory_share(self);// Gravando
+
+  private_CerradoSync_signal_traffic(self->traffic->trafficID, 0, 1);// Entregando ascesso à memoria;
+
+}
+
+void CerradoSync_config_memory(CerradoSync_MemorySharedContent *self, void *new_value, size_t size_value){
 
   memset(self->memory, 0, self->size_memory);
 
@@ -1058,7 +1060,7 @@ void config_memory(MemorySharedContent *self, void *new_value, size_t size_value
   memcpy(self->memory, new_value , size_value);
 }
 
-void private_config_memory_share(MemorySharedContent *self){
+void private_CerradoSync_config_memory_share(CerradoSync_MemorySharedContent *self){
 
   memset(self->memoryShared, 0, self->size_memoryShared);
 
@@ -1081,11 +1083,11 @@ void private_config_memory_share(MemorySharedContent *self){
 
 
 
-int private_get_stats_traffic(int id, int index_get){
+int private_CerradoSync_get_stats_traffic(int id, int index_get){
   return semctl(id, index_get, GETVAL);
 }
 
-int private_init_traffic(key_t key){
+int private_CerradoSync_init_traffic(key_t key){
 
   int sem_share = semget(key, 2, IPC_CREAT | IPC_EXCL | 0666);
 
@@ -1104,8 +1106,8 @@ int private_init_traffic(key_t key){
   return sem_share;
 }
 
-int private_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key){
-  *key = private_creat_key(className);
+int private_CerradoSync_creat_a_wait_point(const char *className, int initial, int number_traffics, key_t *key){
+  *key = private_CerradoSync_creat_key(className);
 
   int sem_point = semget(*key, 1, IPC_CREAT | IPC_EXCL | 0666);
   if(sem_point == -1){
@@ -1121,14 +1123,14 @@ int private_creat_a_wait_point(const char *className, int initial, int number_tr
   return sem_point;
 }
 
-int private_wait(key_t key, int number_traffics, int index_get, int color){
+int private_CerradoSync_wait(key_t key, int number_traffics, int index_get, int color){
 
   int sem_point = semget(key, number_traffics, 0);
   if(sem_point == -1){
     return -1;
   }
 
-  int point_stats = private_get_stats_traffic(sem_point, index_get);
+  int point_stats = private_CerradoSync_get_stats_traffic(sem_point, index_get);
   if(point_stats == -1){
     return -1;
   }
@@ -1137,7 +1139,7 @@ int private_wait(key_t key, int number_traffics, int index_get, int color){
     
     do{
 
-      point_stats = private_get_stats_traffic(sem_point, index_get);
+      point_stats = private_CerradoSync_get_stats_traffic(sem_point, index_get);
       if(point_stats == -1){
         return -1;
       }
@@ -1153,7 +1155,7 @@ int private_wait(key_t key, int number_traffics, int index_get, int color){
   return 0;
 }
 
-int private_signal_traffic(int id, int index_traffic, int color){
+int private_CerradoSync_signal_traffic(int id, int index_traffic, int color){
 
   struct sembuf operation = {0, color, 0};
 
@@ -1164,11 +1166,11 @@ int private_signal_traffic(int id, int index_traffic, int color){
   return id;
 }
 
-void private_close_traffic(int id){
+void private_CerradoSync_close_traffic(int id){
   semctl(id, 0, IPC_RMID);
 }
 
-int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_pointer){
+int CerradoSync_create_pointer_traffic(CerradoSync *self, const char *className, int initial_pointer){
   
   int result = -1;
   int number_of_traffics = 1;
@@ -1181,17 +1183,17 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
     initial_pointer = GREEN_TRAFFIC;
   }
 
-  if((result = private_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
+  if((result = private_CerradoSync_creat_a_wait_point(className, initial_pointer, number_of_traffics, &key)) == -1){
     return -1;
   }
 
-  TrafficPointersList *objs_traffic = self->memory->traffic;
-  objs_traffic->semID = (TrafficPointerObject **)realloc(objs_traffic->semID, sizeof(TrafficPointerObject *) * (objs_traffic->size_elements + 1));
+  CerradoSync_TrafficPointersList *objs_traffic = self->memory->traffic;
+  objs_traffic->semID = (CerradoSync_TrafficPointerObject **)realloc(objs_traffic->semID, sizeof(CerradoSync_TrafficPointerObject *) * (objs_traffic->size_elements + 1));
   if(objs_traffic->semID == NULL){
     return -1;
   }
 
-  TrafficPointerObject *obj_traffic = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject));
+  CerradoSync_TrafficPointerObject *obj_traffic = (CerradoSync_TrafficPointerObject *)malloc(sizeof(CerradoSync_TrafficPointerObject));
   if(obj_traffic == NULL){
     return -1;
   }
@@ -1208,23 +1210,23 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
   return 1;
 }
 
-int wait_traffic(MemoryShared *memory, const char *className, int color){
+int CerradoSync_wait_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory->pid);
+  key_t key = private_CerradoSync_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
 
-  if(private_wait(key, 1, 0, color) == -1){
+  if(private_CerradoSync_wait(key, 1, 0, color) == -1){
     return -1;
   }
 
   return 1;
 }
 
-int signal_traffic(MemoryShared *memory, const char *className, int color){
+int CerradoSync_signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
-  key_t key = private_generate_string_key(className, memory->pid);
+  key_t key = private_CerradoSync_generate_string_key(className, memory->pid);
   if(!key){
     return -1;
   }
@@ -1235,19 +1237,19 @@ int signal_traffic(MemoryShared *memory, const char *className, int color){
   }
 
   int result = -1;
-  if((result = private_get_stats_traffic(sem_point, 0)) == -1){
+  if((result = private_CerradoSync_get_stats_traffic(sem_point, 0)) == -1){
     return -1;
   }
 
   if(color == GREEN_TRAFFIC){
     if(result <= 0){
-      private_signal_traffic(sem_point, 0, 1);
+      private_CerradoSync_signal_traffic(sem_point, 0, 1);
       return 1;
     }
   }
   if(color == RED_TRAFFIC){
     if(result > 0){
-      private_signal_traffic(sem_point, 0, -1);
+      private_CerradoSync_signal_traffic(sem_point, 0, -1);
       return 1;
     }
   }
@@ -1267,23 +1269,23 @@ int signal_traffic(MemoryShared *memory, const char *className, int color){
 //silver_chain_scope_end
 
 
-int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
+int CerradoSync_add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg){
 
   if(!callback_self || !add_arg || !callback_self->args){
     return -1;
   }
 
-  ArgumentsCallback *self = callback_self->args;
+  CerradoSync_ArgumentsCallback *self = callback_self->args;
 
   self->size_arguments++;
 
-  self->arguments = (ArgumentCallback **)realloc(self->arguments, sizeof(ArgumentCallback *) * (self->size_arguments + 1));
+  self->arguments = (CerradoSync_ArgumentCallback **)realloc(self->arguments, sizeof(CerradoSync_ArgumentCallback *) * (self->size_arguments + 1));
   if(!self->arguments){
     self->size_arguments--;
     return -2;
   }
 
-  self->arguments[self->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
+  self->arguments[self->size_arguments - 1] = (CerradoSync_ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
   if(!self->arguments[self->size_arguments - 1]){
     self->size_arguments--;
     return -3;
@@ -1295,26 +1297,26 @@ int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
 }
 
 
-ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size){
+CerradoSync_ArgumentCallback *CerradoSync_new_argument(const char *name_argument, void *arg, size_t arg_size){
 
   if(!name_argument || !arg){
     return NULL;
   }
 
-  ArgumentCallback *self = (ArgumentCallback *)malloc(sizeof(ArgumentCallback));
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_ArgumentCallback *self = (CerradoSync_ArgumentCallback *)malloc(sizeof(CerradoSync_ArgumentCallback));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->name_argument = (const char *)malloc(strlen(name_argument) + 1);
-  if(!private_free_interrupted((char *)self->name_argument, (void *[]){self, NULL}, 2)){
+  if(!private_CerradoSync_free_interrupted((char *)self->name_argument, (void *[]){self, NULL}, 2)){
     return NULL;
   }
 
   strcpy((char *)self->name_argument, name_argument);
 
   self->arg = (void *)malloc(arg_size + 1);
-  if(!private_free_interrupted(self->arg, (void *[]){(char *)self->name_argument, self}, 2)){
+  if(!private_CerradoSync_free_interrupted(self->arg, (void *[]){(char *)self->name_argument, self}, 2)){
     return NULL;
   }
 
@@ -1324,7 +1326,7 @@ ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_
 
 }
 
-void private_free_argument(ArgumentCallback *self){
+void private_CerradoSync_free_argument(CerradoSync_ArgumentCallback *self){
   if(self != NULL){
     if(self->arg != NULL){
       free(self->arg);
@@ -1336,19 +1338,19 @@ void private_free_argument(ArgumentCallback *self){
   }
 }
 
-ArgumentsCallback *private_new_ArgumentsCallback(){
-  ArgumentsCallback *self = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
-  if(!private_free_interrupted(self, NULL, 0)){
+CerradoSync_ArgumentsCallback *private_CerradoSync_new_ArgumentsCallback(){
+  CerradoSync_ArgumentsCallback *self = (CerradoSync_ArgumentsCallback *)malloc(sizeof(CerradoSync_ArgumentsCallback) + 1);
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
-  self->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) + 1);
-  if(!private_free_interrupted(self->arguments, (void *[]){self}, 1)){
+  self->arguments = (CerradoSync_ArgumentCallback **)malloc(sizeof(CerradoSync_ArgumentCallback *) + 1);
+  if(!private_CerradoSync_free_interrupted(self->arguments, (void *[]){self}, 1)){
     return NULL;
   }
 
-  self->arguments[0] = (ArgumentCallback *)malloc(0);
-  if(!private_free_interrupted(self->arguments[0], (void *[]){self->arguments, self}, 2)){
+  self->arguments[0] = (CerradoSync_ArgumentCallback *)malloc(0);
+  if(!private_CerradoSync_free_interrupted(self->arguments[0], (void *[]){self->arguments, self}, 2)){
     return NULL;
   }
 
@@ -1357,15 +1359,15 @@ ArgumentsCallback *private_new_ArgumentsCallback(){
   return self;
 }
 
-void private_free_ArgumentsCallback(ArgumentsCallback *self){
+void private_CerradoSync_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self){
   if(self){
   
     if(self->arguments){
 
       for(int i=0; i < self->size_arguments + 1; i++){
         if(self->arguments[i] != NULL){
-          ArgumentCallback *argument = self->arguments[i];
-          private_free_argument(argument);
+          CerradoSync_ArgumentCallback *argument = self->arguments[i];
+          private_CerradoSync_free_argument(argument);
         }
       }
 
@@ -1376,30 +1378,44 @@ void private_free_ArgumentsCallback(ArgumentsCallback *self){
   }
 }
 
-CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments)){
+CerradoSync_CallbackProcess *CerradoSync_new_CallbackProcess(CerradoSync *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments)){
 
   if(!function || !process_father){
     return NULL;
   }
 
-  CallbackProcess *self = (CallbackProcess *)malloc(sizeof(CallbackProcess));
-  if(!private_free_interrupted(self, NULL, 0)){
+  size_t size_elements = process_father->size_list_callbacks;
+  CerradoSync_CallbackProcess **callbacks = process_father->callbacks;
+
+  CerradoSync_CallbackProcess **self = (CerradoSync_CallbackProcess **)realloc(callbacks, sizeof(CerradoSync_CallbackProcess *) * (size_elements + 2));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
-  self->args = private_new_ArgumentsCallback();
+  self[size_elements] = (CerradoSync_CallbackProcess *)malloc(sizeof(CerradoSync_CallbackProcess));
+  if(!private_CerradoSync_free_interrupted(self[size_elements], (void *[]){self}, 1)){
+    return NULL;
+  }
 
-  self->function_callback = function;
+  self[size_elements]->args = private_CerradoSync_new_ArgumentsCallback();
+  if(!private_CerradoSync_free_interrupted(self[size_elements]->args, (void *[]){self[size_elements], self}, 2)){
+    return NULL;
+  }
 
-  self->memory = process_father->memory;
+  self[size_elements]->function_callback = function;
 
-  return self;
+  self[size_elements]->memory = process_father->memory;
+
+  process_father->size_list_callbacks = size_elements + 1;
+  process_father->callbacks = self;
+
+  return process_father->callbacks[size_elements];
 }
 
-void free_callback(CallbackProcess *self){
+void private_CerradoSync_free_callback(CerradoSync_CallbackProcess *self){
   if(self != NULL){
 
-    private_free_ArgumentsCallback(self->args);
+    private_CerradoSync_free_ArgumentsCallback(self->args);
     
     free(self);
   }
@@ -1414,7 +1430,7 @@ void free_callback(CallbackProcess *self){
 
 //silver_chain_scope_end
 
-CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_traffic){
+CerradoSync *new_CerradoSyncStruct(const char *class_name, size_t size_max_memory_traffic){
 
   static bool primary_run = true;
   if(primary_run){
@@ -1422,52 +1438,59 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   }
   primary_run = false;
 
-  CerradoSyn *self = malloc(sizeof(CerradoSyn));
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync *self = malloc(sizeof(CerradoSync));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->pid_father = getpid();
 
-  self->process_list = (Process **)malloc(sizeof(Process *) * 2);
-  if(!private_free_interrupted(self->process_list, (void *[]){self}, 1)){
+  self->process_list = (CerradoSync_Process **)malloc(sizeof(CerradoSync_Process *) * 2);
+  if(!private_CerradoSync_free_interrupted(self->process_list, (void *[]){self}, 1)){
     return NULL;
   }
 
   self->size_process = 0;
 
   self->name_class = (const char *)malloc(strlen(class_name) + 1);
-  if(!private_free_interrupted((char *)self->name_class, (void *[]){self->process_list, self}, 2)){
+  if(!private_CerradoSync_free_interrupted((char *)self->name_class, (void *[]){self->process_list, self}, 2)){
     return NULL;
   }
 
   strcpy((char *)self->name_class, class_name);
 
-  self->key = private_creat_key(self->name_class);
+  self->key = private_CerradoSync_creat_key(self->name_class);
   if(!self->key){
-    private_free_interrupted(NULL, (void *[]){(char *)self->name_class, self->process_list, self}, 3);
+    private_CerradoSync_free_interrupted(NULL, (void *[]){(char *)self->name_class, self->process_list, self}, 3);
     return NULL;
   }
 
   self->class_list = NULL;
-  
-  self->memory = private_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
-  if(!private_free_interrupted((MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+
+  self->callbacks = (CerradoSync_CallbackProcess **)malloc(sizeof(CerradoSync_CallbackProcess *));
+  if(!private_CerradoSync_free_interrupted(self->callbacks, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+    return NULL;
+  }
+
+  self->size_list_callbacks = 0;
+
+  self->memory = private_CerradoSync_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
+  if(!private_CerradoSync_free_interrupted((CerradoSync_MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
     return NULL;
   }
 
   return self;
 }
 
-void free_CerradoSyn(CerradoSyn *self){
+void free_CerradoSync(CerradoSync *self){
 
   if(self != NULL){
 
     if(self->process_list != NULL){
       for(int i = 0; i < self->size_process + 1; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
         if(self->process_list[i] != NULL){
-          Process *process_temp = self->process_list[i];
-          private_free_process(process_temp);
+          CerradoSync_Process *process_temp = self->process_list[i];
+          private_CerradoSync_free_process(process_temp);
         }
       }
       free(self->process_list);
@@ -1477,8 +1500,17 @@ void free_CerradoSyn(CerradoSyn *self){
       free((char *)self->name_class);
     }
 
+    if(self->callbacks){
+      for(int i = 0; i < self->size_list_callbacks + 1; i++){
+        if(self->callbacks[i]){
+          private_CerradoSync_free_callback(self->callbacks[i]);
+        }
+      }
+      free(self->callbacks);
+    }
+
     if(self->memory != NULL){
-      private_delet_memory(self->memory);
+      private_CerradoSync_delet_memory(self->memory);
     }
 
     free(self);
@@ -1498,18 +1530,18 @@ void free_CerradoSyn(CerradoSyn *self){
 //silver_chain_scope_end
 
 
-MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
+CerradoSync_MemoryShared *private_CerradoSync_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
   
   short size_arguments = 0;
 
-  MemoryShared *self = (MemoryShared *)malloc(sizeof(MemoryShared) + 1);
-  if(!private_free_interrupted(self, NULL, size_arguments)){
+  CerradoSync_MemoryShared *self = (CerradoSync_MemoryShared *)malloc(sizeof(CerradoSync_MemoryShared) + 1);
+  if(!private_CerradoSync_free_interrupted(self, NULL, size_arguments)){
     return NULL;
   }
 
-  self->key = private_creat_key(name_class);
+  self->key = private_CerradoSync_creat_key(name_class);
   if(!self->key){
-    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, size_arguments);
     return NULL;
   }
 
@@ -1517,36 +1549,32 @@ MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t siz
 
   self->memory_location = shmget(self->key, size_max_traffic, _CONFIG_SHMGET_PERMISSIONS_);
   if(self->memory_location == -1){
-    private_free_interrupted(NULL, (void *[]){self}, ++size_arguments);
-    printf("erroB");
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, ++size_arguments);
     return NULL;
   }
 
-
-  self->memory_shared = private_new_MemorySharedContent(self, size_max_traffic);
+  self->memory_shared = private_CerradoSync_new_MemorySharedContent(self, size_max_traffic);
   if(!self->memory_shared){
     shmctl(self->memory_location, IPC_RMID, NULL);
-    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
-    printf("erro");
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, size_arguments);
     return NULL;
   }
 
-  self->traffic = private_new_TrafficPointersList();
+  self->traffic = private_CerradoSync_new_TrafficPointersList();
   if(!self->traffic){
-    private_free_MemorySharedContent(self->memory_shared);
+    private_CerradoSync_free_MemorySharedContent(self->memory_shared);
     shmctl(self->memory_location, IPC_RMID, NULL);
-    private_free_interrupted(NULL, (void *[]){self}, size_arguments);
-    printf("erro");
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, size_arguments);
     return NULL;
   }
 
   return self;
 }
 
-void private_delet_memory(MemoryShared *memory_shared){
+void private_CerradoSync_delet_memory(CerradoSync_MemoryShared *memory_shared){
   if(memory_shared){
-    private_free_TrafficPointersList(memory_shared->traffic);
-    private_free_MemorySharedContent(memory_shared->memory_shared);
+    private_CerradoSync_free_TrafficPointersList(memory_shared->traffic);
+    private_CerradoSync_free_MemorySharedContent(memory_shared->memory_shared);
 
     shmctl(memory_shared->memory_location, IPC_RMID, NULL);
 
@@ -1572,42 +1600,42 @@ void private_delet_memory(MemoryShared *memory_shared){
 
 
 
-MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared){
+CerradoSync_MemorySharedContent *private_CerradoSync_new_MemorySharedContent(CerradoSync_MemoryShared *memory_struct, size_t size_memoryShared){
 
-  MemorySharedContent *self = (MemorySharedContent*)malloc(sizeof(MemorySharedContent));
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_MemorySharedContent *self = (CerradoSync_MemorySharedContent*)malloc(sizeof(CerradoSync_MemorySharedContent));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->size_memoryShared = size_memoryShared;
 
-  self->traffic = private_new_TrafficMemory(memory_struct->key);
-  if(!private_free_interrupted(self->traffic, (void *[]){self}, 1)){
+  self->traffic = private_CerradoSync_new_TrafficMemory(memory_struct->key);
+  if(!private_CerradoSync_free_interrupted(self->traffic, (void *[]){self}, 1)){
     return NULL;
   }
 
   self->memoryShared = (void *)shmat(memory_struct->memory_location, NULL, 0);;
   if(self->memoryShared == (void *)-1){
-    private_free_traffic(self->traffic);
-    private_free_interrupted(NULL, (void *[]){self}, 1);
+    private_CerradoSync_free_traffic(self->traffic);
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, 1);
     return NULL;
   }
 
   self->size_memory = sizeof(self->memoryShared);
   self->memory = (void *)malloc(self->size_memory + 1);
   if(!self->memory){
-    private_close_memory(memory_struct);
-    private_free_traffic(self->traffic);
-    private_free_interrupted(NULL, (void *[]){self}, 1);
+    private_CerradoSync_close_memory(memory_struct);
+    private_CerradoSync_free_traffic(self->traffic);
+    private_CerradoSync_free_interrupted(NULL, (void *[]){self}, 1);
     return NULL;
   }
 
-  memcpy(self->memory, self->memoryShared, sizeof(self->memoryShared));
+  memcpy(self->memory, self->memoryShared, self->size_memory);
 
   return self;
 }
 
-void private_free_MemorySharedContent(MemorySharedContent *self){
+void private_CerradoSync_free_MemorySharedContent(CerradoSync_MemorySharedContent *self){
   if(self){
     
     if(self->memory){
@@ -1619,7 +1647,7 @@ void private_free_MemorySharedContent(MemorySharedContent *self){
     }
 
     if(self->traffic){
-      private_free_traffic(self->traffic);
+      private_CerradoSync_free_traffic(self->traffic);
     }
 
     free(self);
@@ -1637,15 +1665,15 @@ void private_free_MemorySharedContent(MemorySharedContent *self){
 
 
 
-TrafficMemory *private_new_TrafficMemory(key_t key){
+CerradoSync_TrafficMemory *private_CerradoSync_new_TrafficMemory(key_t key){
   
-  TrafficMemory *self = (TrafficMemory *)malloc(sizeof(TrafficMemory));
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_TrafficMemory *self = (CerradoSync_TrafficMemory *)malloc(sizeof(CerradoSync_TrafficMemory));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->key = key;
-  self->trafficID = private_init_traffic(self->key);
+  self->trafficID = private_CerradoSync_init_traffic(self->key);
   if(self->trafficID == -1){
     free(self);
     return NULL;
@@ -1654,19 +1682,19 @@ TrafficMemory *private_new_TrafficMemory(key_t key){
   return self;
 }
 
-TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer){
+CerradoSync_TrafficPointerObject *private_CerradoSync_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer){
 
-  if(!private_free_interrupted((void *)className, NULL, 0)){
+  if(!private_CerradoSync_free_interrupted((void *)className, NULL, 0)){
     return NULL;
   }
 
-  TrafficPointerObject *self = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject) + 1);
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_TrafficPointerObject *self = (CerradoSync_TrafficPointerObject *)malloc(sizeof(CerradoSync_TrafficPointerObject));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->nameClass = (const char *)malloc(strlen(className) + 1);
-  if(!private_free_interrupted((void *)self->nameClass, (void *[]){self}, 1)){
+  if(!private_CerradoSync_free_interrupted((void *)self->nameClass, (void *[]){self}, 1)){
     return NULL;
   }
 
@@ -1675,12 +1703,12 @@ TrafficPointerObject *private_new_TrafficPointerObject(const char *className, in
 
   self->number_traffics = contTraffics;
   if(self->number_traffics < 1){
-    private_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
+    private_CerradoSync_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
     return NULL;
   }
 
-  if((self->traffic_ID = private_creat_a_wait_point(self->nameClass, initialPointer, self->number_traffics, &self->key)) == -1){
-    private_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
+  if((self->traffic_ID = private_CerradoSync_creat_a_wait_point(self->nameClass, initialPointer, self->number_traffics, &self->key)) == -1){
+    private_CerradoSync_free_interrupted(NULL, (void *[]){(void *)self->nameClass, self}, 2);
     return NULL;
   }
 
@@ -1688,47 +1716,47 @@ TrafficPointerObject *private_new_TrafficPointerObject(const char *className, in
 
 }
 
-TrafficPointersList *private_new_TrafficPointersList(){
+CerradoSync_TrafficPointersList *private_CerradoSync_new_TrafficPointersList(){
 
-  TrafficPointersList *self = (TrafficPointersList *)malloc(sizeof(TrafficPointersList) + 1);
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_TrafficPointersList *self = (CerradoSync_TrafficPointersList *)malloc(sizeof(CerradoSync_TrafficPointersList) + 1);
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->size_elements = 0;
-  self->semID = (TrafficPointerObject **)malloc(sizeof(TrafficPointerObject *));
-  if(!private_free_interrupted(self->semID, (void *[]){self}, 1)){
+  self->semID = (CerradoSync_TrafficPointerObject **)malloc(sizeof(CerradoSync_TrafficPointerObject *));
+  if(!private_CerradoSync_free_interrupted(self->semID, (void *[]){self}, 1)){
     return NULL;
   }
 
   return self;
 }
 
-void private_free_traffic(TrafficMemory *self){
+void private_CerradoSync_free_traffic(CerradoSync_TrafficMemory *self){
   if(self){
-    private_close_traffic(self->trafficID);
+    private_CerradoSync_close_traffic(self->trafficID);
     free(self);
   }
 }
 
-void private_free_TrafficPointerObject(TrafficPointerObject *self){
+void private_CerradoSync_free_TrafficPointerObject(CerradoSync_TrafficPointerObject *self){
   if(self){
 
     if(self->traffic_ID != -1){
-      private_close_traffic(self->traffic_ID);
+      private_CerradoSync_close_traffic(self->traffic_ID);
     }
 
     free(self);
   }
 }
 
-void private_free_TrafficPointersList(TrafficPointersList *self){
+void private_CerradoSync_free_TrafficPointersList(CerradoSync_TrafficPointersList *self){
 
   if(self){
 
     if(self->semID){
       for(int i = 0; i < self->size_elements; i++){
-        private_free_TrafficPointerObject(self->semID[i]);
+        private_CerradoSync_free_TrafficPointerObject(self->semID[i]);
       }
       free(self->semID);
     }
@@ -1750,16 +1778,16 @@ void private_free_TrafficPointersList(TrafficPointersList *self){
 
 
 
-Process *private_new_process(int size_stack){
+CerradoSync_Process *private_CerradoSync_new_process(int size_stack){
 
-  Process *self = (Process *)malloc(sizeof(Process));
-  if(!private_free_interrupted(self, NULL, 0)){
+  CerradoSync_Process *self = (CerradoSync_Process *)malloc(sizeof(CerradoSync_Process));
+  if(!private_CerradoSync_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->size_stack = size_stack;
   self->stack = malloc(self->size_stack);
-  if(!private_free_interrupted(self->stack, (void *[]){self}, 1)){
+  if(!private_CerradoSync_free_interrupted(self->stack, (void *[]){self}, 1)){
     return NULL;
   }
 
@@ -1767,7 +1795,7 @@ Process *private_new_process(int size_stack){
 }
 
 
-void private_free_process(Process *self){
+void private_CerradoSync_free_process(CerradoSync_Process *self){
 
   if(self != NULL){
   
