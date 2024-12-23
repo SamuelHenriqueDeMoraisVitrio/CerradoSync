@@ -5,23 +5,23 @@
 //silver_chain_scope_end
 
 
-int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
+int add_argument(CerradoSync_CallbackProcess *callback_self, CerradoSync_ArgumentCallback *add_arg){
 
   if(!callback_self || !add_arg || !callback_self->args){
     return -1;
   }
 
-  ArgumentsCallback *self = callback_self->args;
+  CerradoSync_ArgumentsCallback *self = callback_self->args;
 
   self->size_arguments++;
 
-  self->arguments = (ArgumentCallback **)realloc(self->arguments, sizeof(ArgumentCallback *) * (self->size_arguments + 1));
+  self->arguments = (CerradoSync_ArgumentCallback **)realloc(self->arguments, sizeof(CerradoSync_ArgumentCallback *) * (self->size_arguments + 1));
   if(!self->arguments){
     self->size_arguments--;
     return -2;
   }
 
-  self->arguments[self->size_arguments - 1] = (ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
+  self->arguments[self->size_arguments - 1] = (CerradoSync_ArgumentCallback *)malloc(sizeof(*add_arg) + 1);
   if(!self->arguments[self->size_arguments - 1]){
     self->size_arguments--;
     return -3;
@@ -33,13 +33,13 @@ int add_argument(CallbackProcess *callback_self, ArgumentCallback *add_arg){
 }
 
 
-ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size){
+CerradoSync_ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_size){
 
   if(!name_argument || !arg){
     return NULL;
   }
 
-  ArgumentCallback *self = (ArgumentCallback *)malloc(sizeof(ArgumentCallback));
+  CerradoSync_ArgumentCallback *self = (CerradoSync_ArgumentCallback *)malloc(sizeof(CerradoSync_ArgumentCallback));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -62,7 +62,7 @@ ArgumentCallback *new_argument(const char *name_argument, void *arg, size_t arg_
 
 }
 
-void private_free_argument(ArgumentCallback *self){
+void private_free_argument(CerradoSync_ArgumentCallback *self){
   if(self != NULL){
     if(self->arg != NULL){
       free(self->arg);
@@ -74,18 +74,18 @@ void private_free_argument(ArgumentCallback *self){
   }
 }
 
-ArgumentsCallback *private_new_ArgumentsCallback(){
-  ArgumentsCallback *self = (ArgumentsCallback *)malloc(sizeof(ArgumentsCallback) + 1);
+CerradoSync_ArgumentsCallback *private_new_ArgumentsCallback(){
+  CerradoSync_ArgumentsCallback *self = (CerradoSync_ArgumentsCallback *)malloc(sizeof(CerradoSync_ArgumentsCallback) + 1);
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
-  self->arguments = (ArgumentCallback **)malloc(sizeof(ArgumentCallback *) + 1);
+  self->arguments = (CerradoSync_ArgumentCallback **)malloc(sizeof(CerradoSync_ArgumentCallback *) + 1);
   if(!private_free_interrupted(self->arguments, (void *[]){self}, 1)){
     return NULL;
   }
 
-  self->arguments[0] = (ArgumentCallback *)malloc(0);
+  self->arguments[0] = (CerradoSync_ArgumentCallback *)malloc(0);
   if(!private_free_interrupted(self->arguments[0], (void *[]){self->arguments, self}, 2)){
     return NULL;
   }
@@ -95,14 +95,14 @@ ArgumentsCallback *private_new_ArgumentsCallback(){
   return self;
 }
 
-void private_free_ArgumentsCallback(ArgumentsCallback *self){
+void private_free_ArgumentsCallback(CerradoSync_ArgumentsCallback *self){
   if(self){
   
     if(self->arguments){
 
       for(int i=0; i < self->size_arguments + 1; i++){
         if(self->arguments[i] != NULL){
-          ArgumentCallback *argument = self->arguments[i];
+          CerradoSync_ArgumentCallback *argument = self->arguments[i];
           private_free_argument(argument);
         }
       }
@@ -114,13 +114,13 @@ void private_free_ArgumentsCallback(ArgumentsCallback *self){
   }
 }
 
-CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(MemoryShared *memory, ArgumentsCallback *arguments)){
+CerradoSync_CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments)){
 
   if(!function || !process_father){
     return NULL;
   }
 
-  CallbackProcess *self = (CallbackProcess *)malloc(sizeof(CallbackProcess));
+  CerradoSync_CallbackProcess *self = (CerradoSync_CallbackProcess *)malloc(sizeof(CerradoSync_CallbackProcess));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -134,7 +134,7 @@ CallbackProcess *new_CallbackProcess(CerradoSyn *process_father, int (*function)
   return self;
 }
 
-void free_callback(CallbackProcess *self){
+void free_callback(CerradoSync_CallbackProcess *self){
   if(self != NULL){
 
     private_free_ArgumentsCallback(self->args);

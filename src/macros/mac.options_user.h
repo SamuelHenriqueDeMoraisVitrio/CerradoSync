@@ -5,6 +5,7 @@
 //silver_chain_scope_end
 
 
+#define _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_ 1024 // 1kb
 
 #define GREEN_TRAFFIC 1
 #define RED_TRAFFIC 0

@@ -5,11 +5,11 @@
 //silver_chain_scope_end
 
 
-MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
+CerradoSync_MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t size_max_traffic){
   
   short size_arguments = 0;
 
-  MemoryShared *self = (MemoryShared *)malloc(sizeof(MemoryShared) + 1);
+  CerradoSync_MemoryShared *self = (CerradoSync_MemoryShared *)malloc(sizeof(CerradoSync_MemoryShared) + 1);
   if(!private_free_interrupted(self, NULL, size_arguments)){
     return NULL;
   }
@@ -50,7 +50,7 @@ MemoryShared *private_new_MemorySahred_struct(const char *name_class, size_t siz
   return self;
 }
 
-void private_delet_memory(MemoryShared *memory_shared){
+void private_delet_memory(CerradoSync_MemoryShared *memory_shared){
   if(memory_shared){
     private_free_TrafficPointersList(memory_shared->traffic);
     private_free_MemorySharedContent(memory_shared->memory_shared);

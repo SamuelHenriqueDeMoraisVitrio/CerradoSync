@@ -6,14 +6,14 @@
 
 int callback_config(void *arg){
 
-  CallbackProcess *struct_arg = (CallbackProcess *)arg;
+  CerradoSync_CallbackProcess *struct_arg = (CerradoSync_CallbackProcess *)arg;
 
-  MemoryShared *memory_argument_0 = (MemoryShared *)struct_arg->memory;
+  CerradoSync_MemoryShared *memory_argument_0 = (CerradoSync_MemoryShared *)struct_arg->memory;
   private_memory_data_attach(memory_argument_0);
 
   pull_memory(memory_argument_0->memory_shared);
 
-  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
+  int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
   function_callback = struct_arg->function_callback;
   int var_return = function_callback(memory_argument_0, struct_arg->args);
 
@@ -22,7 +22,7 @@ int callback_config(void *arg){
   return var_return;
 }
 
-int private_clone_process(Process *process, CallbackProcess *callback, int *flags){
+int private_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags){
 
   pid_t pid_process = clone(callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
 

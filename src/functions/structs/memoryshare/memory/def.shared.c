@@ -6,9 +6,9 @@
 
 
 
-MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct, size_t size_memoryShared){
+CerradoSync_MemorySharedContent *private_new_MemorySharedContent(CerradoSync_MemoryShared *memory_struct, size_t size_memoryShared){
 
-  MemorySharedContent *self = (MemorySharedContent*)malloc(sizeof(MemorySharedContent));
+  CerradoSync_MemorySharedContent *self = (CerradoSync_MemorySharedContent*)malloc(sizeof(CerradoSync_MemorySharedContent));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -41,7 +41,7 @@ MemorySharedContent *private_new_MemorySharedContent(MemoryShared *memory_struct
   return self;
 }
 
-void private_free_MemorySharedContent(MemorySharedContent *self){
+void private_free_MemorySharedContent(CerradoSync_MemorySharedContent *self){
   if(self){
     
     if(self->memory){

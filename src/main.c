@@ -6,7 +6,7 @@
 
 
 
-int process_print_name(MemoryShared *memory, ArgumentsCallback *args){
+int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *args){
 
   const char *name = (const char *)args->arguments[0]->arg;
 
@@ -43,7 +43,7 @@ int main(){
     return 1;
   }
 
-  MemoryShared *memory = main->memory;
+  CerradoSync_MemoryShared *memory = main->memory;
   pull_memory(memory->memory_shared);
   int valorAtual = 450;
   config_memory(memory->memory_shared, &valorAtual, sizeof(int));
@@ -53,10 +53,10 @@ int main(){
 
   result = create_pointer_traffic(main, "className", RED_TRAFFIC);
 
-  CallbackProcess *callback = new_CallbackProcess(main, process_print_name);
+  CerradoSync_CallbackProcess *callback = new_CallbackProcess(main, process_print_name);
 
   const char *name = "Samuel Henrique";
-  ArgumentCallback *name_arg = new_argument("teste", (void *)name, strlen(name));
+  CerradoSync_ArgumentCallback *name_arg = new_argument("teste", (void *)name, strlen(name));
   add_argument(callback, name_arg);
 
   create_process(main, callback, NULL);

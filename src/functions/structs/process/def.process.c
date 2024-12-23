@@ -6,9 +6,9 @@
 
 
 
-Process *private_new_process(int size_stack){
+CerradoSync_Process *private_new_process(int size_stack){
 
-  Process *self = (Process *)malloc(sizeof(Process));
+  CerradoSync_Process *self = (CerradoSync_Process *)malloc(sizeof(CerradoSync_Process));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -23,7 +23,7 @@ Process *private_new_process(int size_stack){
 }
 
 
-void private_free_process(Process *self){
+void private_free_process(CerradoSync_Process *self){
 
   if(self != NULL){
   

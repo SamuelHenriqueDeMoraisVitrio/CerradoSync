@@ -6,7 +6,7 @@
 
 
 
-int private_clone_process(Process *process, CallbackProcess *callback, int *flags);
+int private_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags);
 
 
 

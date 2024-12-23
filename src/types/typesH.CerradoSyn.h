@@ -5,15 +5,15 @@
 //silver_chain_scope_end
 
 
-struct CerradoSynStruct{
+struct private_CerradoSyncStruct{
   int pid_father;
   const char *name_class;
   key_t key;
 
-  Process **process_list;
+  CerradoSync_Process **process_list;
   size_t size_process;
   
-  MemoryShared *memory;
+  CerradoSync_MemoryShared *memory;
   CerradoSyn *class_list;
 };
 

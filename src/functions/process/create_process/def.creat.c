@@ -7,7 +7,7 @@
 
 
 
-int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *flags) {
+int create_process(CerradoSyn *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
   if (getpid() != main_process->pid_father) {
       return -1;
   }
@@ -16,7 +16,7 @@ int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fla
     return -1;
   }
 
-  Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
+  CerradoSync_Process *new_process = private_new_process(_SIZE_STACK_PROCESS_1MB_);
   if(!new_process){
     return -1;
   }
@@ -29,7 +29,7 @@ int create_process(CerradoSyn *main_process, CallbackProcess *callback, int *fla
 
   main_process->size_process++;
 
-  main_process->process_list = (Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(Process *));
+  main_process->process_list = (CerradoSync_Process **)realloc(main_process->process_list, (main_process->size_process + 1) * sizeof(CerradoSync_Process *));
   if(!main_process->process_list){
     return -1;
   }

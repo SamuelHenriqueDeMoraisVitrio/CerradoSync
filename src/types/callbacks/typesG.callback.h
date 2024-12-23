@@ -8,10 +8,10 @@
 
 
 
-struct CallbackProcess_struct{
-  int(*function_callback)(MemoryShared *memory, ArgumentsCallback *arguments);
-  ArgumentsCallback *args;
-  MemoryShared *memory;
+struct private_CerradoSync_CallbackProcess_struct{
+  int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
+  CerradoSync_ArgumentsCallback *args;
+  CerradoSync_MemoryShared *memory;
 };
 
 

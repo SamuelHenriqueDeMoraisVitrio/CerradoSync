@@ -111,13 +111,13 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
     return -1;
   }
 
-  TrafficPointersList *objs_traffic = self->memory->traffic;
-  objs_traffic->semID = (TrafficPointerObject **)realloc(objs_traffic->semID, sizeof(TrafficPointerObject *) * (objs_traffic->size_elements + 1));
+  CerradoSync_TrafficPointersList *objs_traffic = self->memory->traffic;
+  objs_traffic->semID = (CerradoSync_TrafficPointerObject **)realloc(objs_traffic->semID, sizeof(CerradoSync_TrafficPointerObject *) * (objs_traffic->size_elements + 1));
   if(objs_traffic->semID == NULL){
     return -1;
   }
 
-  TrafficPointerObject *obj_traffic = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject));
+  CerradoSync_TrafficPointerObject *obj_traffic = (CerradoSync_TrafficPointerObject *)malloc(sizeof(CerradoSync_TrafficPointerObject));
   if(obj_traffic == NULL){
     return -1;
   }
@@ -134,7 +134,7 @@ int create_pointer_traffic(CerradoSyn *self, const char *className, int initial_
   return 1;
 }
 
-int wait_traffic(MemoryShared *memory, const char *className, int color){
+int wait_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
   key_t key = private_generate_string_key(className, memory->pid);
   if(!key){
@@ -148,7 +148,7 @@ int wait_traffic(MemoryShared *memory, const char *className, int color){
   return 1;
 }
 
-int signal_traffic(MemoryShared *memory, const char *className, int color){
+int signal_traffic(CerradoSync_MemoryShared *memory, const char *className, int color){
 
   key_t key = private_generate_string_key(className, memory->pid);
   if(!key){

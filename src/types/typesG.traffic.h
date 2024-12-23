@@ -4,19 +4,19 @@
 #include "../imports/imports.typesF.h"
 //silver_chain_scope_end
 
-struct TrafficPointerObject_struct{
+struct private_CerradoSync_TrafficPointerObject_struct{
   int traffic_ID;
   int number_traffics;
   key_t key;
   const char *nameClass;
 };
 
-struct TrafficPointersList_struct{
+struct private_CerradoSync_TrafficPointersList_struct{
   int size_elements;
-  TrafficPointerObject **semID;
+  CerradoSync_TrafficPointerObject **semID;
 };
 
-struct TrafficMemory_struct{
+struct private_CerradoSync_TrafficMemory_struct{
   int trafficID;
   key_t key;
 };

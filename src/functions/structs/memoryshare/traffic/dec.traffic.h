@@ -6,17 +6,17 @@
 
 
 
-TrafficMemory *private_new_TrafficMemory(key_t key);
+CerradoSync_TrafficMemory *private_new_TrafficMemory(key_t key);
 
-TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
+CerradoSync_TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer);
 
-TrafficPointersList *private_new_TrafficPointersList();
+CerradoSync_TrafficPointersList *private_new_TrafficPointersList();
 
-void private_free_TrafficPointerObject(TrafficPointerObject *self);
+void private_free_TrafficPointerObject(CerradoSync_TrafficPointerObject *self);
 
-void private_free_TrafficPointersList(TrafficPointersList *self);
+void private_free_TrafficPointersList(CerradoSync_TrafficPointersList *self);
 
-void private_free_traffic(TrafficMemory *self);
+void private_free_traffic(CerradoSync_TrafficMemory *self);
 
 
 

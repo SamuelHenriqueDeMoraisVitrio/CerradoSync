@@ -5,7 +5,7 @@
 //silver_chain_scope_end
 
 
-struct ProcessStruct{
+struct private_CerradoSync_ProcessStruct{
   pid_t process;
   void *stack;
   int size_stack;

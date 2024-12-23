@@ -19,7 +19,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
 
   self->pid_father = getpid();
 
-  self->process_list = (Process **)malloc(sizeof(Process *) * 2);
+  self->process_list = (CerradoSync_Process **)malloc(sizeof(CerradoSync_Process *) * 2);
   if(!private_free_interrupted(self->process_list, (void *[]){self}, 1)){
     return NULL;
   }
@@ -42,7 +42,7 @@ CerradoSyn *new_CerradoSynStruct(const char *class_name, size_t size_max_memory_
   self->class_list = NULL;
   
   self->memory = private_new_MemorySahred_struct(self->name_class, size_max_memory_traffic);
-  if(!private_free_interrupted((MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
+  if(!private_free_interrupted((CerradoSync_MemoryShared *)self->memory, (void *[]){(char *)self->name_class, self->process_list, self}, 3)){
     return NULL;
   }
 
@@ -56,7 +56,7 @@ void free_CerradoSyn(CerradoSyn *self){
     if(self->process_list != NULL){
       for(int i = 0; i < self->size_process + 1; i++){//O tamanho do process_list sempre vai ser uma unidade maior que o size_process por motivos de seguraça;
         if(self->process_list[i] != NULL){
-          Process *process_temp = self->process_list[i];
+          CerradoSync_Process *process_temp = self->process_list[i];
           private_free_process(process_temp);
         }
       }

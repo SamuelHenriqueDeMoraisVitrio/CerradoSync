@@ -6,12 +6,12 @@
 
 
 
-struct Arguments_struct{
+struct private_CerradoSync_Arguments_struct{
   int size_arguments;
-  ArgumentCallback **arguments;
+  CerradoSync_ArgumentCallback **arguments;
 };
 
-struct Argument_struct{
+struct private_CerradoSync_Argument_struct{
   void *arg;
   const char *name_argument;
 };

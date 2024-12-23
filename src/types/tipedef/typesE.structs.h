@@ -4,24 +4,24 @@
 #include "../../imports/imports.mac.h"
 //silver_chain_scope_end
 
-typedef struct ProcessStruct Process;
+typedef struct private_CerradoSync_ProcessStruct CerradoSync_Process;
 
-typedef struct CerradoSynStruct CerradoSyn;
+typedef struct private_CerradoSyncStruct CerradoSyn;
 
-typedef struct Arguments_struct ArgumentsCallback;
+typedef struct private_CerradoSync_Arguments_struct CerradoSync_ArgumentsCallback;
 
-typedef struct Argument_struct ArgumentCallback;
+typedef struct private_CerradoSync_Argument_struct CerradoSync_ArgumentCallback;
 
-typedef struct CallbackProcess_struct CallbackProcess;
+typedef struct private_CerradoSync_CallbackProcess_struct CerradoSync_CallbackProcess;
 
-typedef struct MemorySharedContent_struct MemorySharedContent;
+typedef struct private_CerradoSync_MemorySharedContent_struct CerradoSync_MemorySharedContent;
 
-typedef struct MemoryShared_struct MemoryShared;
+typedef struct private_CerradoSync_MemoryShared_struct CerradoSync_MemoryShared;
 
-typedef struct TrafficPointersList_struct TrafficPointersList;
+typedef struct private_CerradoSync_TrafficPointersList_struct CerradoSync_TrafficPointersList;
 
-typedef struct TrafficPointerObject_struct TrafficPointerObject;
+typedef struct private_CerradoSync_TrafficPointerObject_struct CerradoSync_TrafficPointerObject;
 
-typedef struct TrafficMemory_struct TrafficMemory;
+typedef struct private_CerradoSync_TrafficMemory_struct CerradoSync_TrafficMemory;
 
 

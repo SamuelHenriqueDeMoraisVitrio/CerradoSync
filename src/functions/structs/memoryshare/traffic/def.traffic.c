@@ -6,9 +6,9 @@
 
 
 
-TrafficMemory *private_new_TrafficMemory(key_t key){
+CerradoSync_TrafficMemory *private_new_TrafficMemory(key_t key){
   
-  TrafficMemory *self = (TrafficMemory *)malloc(sizeof(TrafficMemory));
+  CerradoSync_TrafficMemory *self = (CerradoSync_TrafficMemory *)malloc(sizeof(CerradoSync_TrafficMemory));
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -23,13 +23,13 @@ TrafficMemory *private_new_TrafficMemory(key_t key){
   return self;
 }
 
-TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer){
+CerradoSync_TrafficPointerObject *private_new_TrafficPointerObject(const char *className, int contTraffics, int initialPointer){
 
   if(!private_free_interrupted((void *)className, NULL, 0)){
     return NULL;
   }
 
-  TrafficPointerObject *self = (TrafficPointerObject *)malloc(sizeof(TrafficPointerObject) + 1);
+  CerradoSync_TrafficPointerObject *self = (CerradoSync_TrafficPointerObject *)malloc(sizeof(CerradoSync_TrafficPointerObject) + 1);
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
@@ -57,15 +57,15 @@ TrafficPointerObject *private_new_TrafficPointerObject(const char *className, in
 
 }
 
-TrafficPointersList *private_new_TrafficPointersList(){
+CerradoSync_TrafficPointersList *private_new_TrafficPointersList(){
 
-  TrafficPointersList *self = (TrafficPointersList *)malloc(sizeof(TrafficPointersList) + 1);
+  CerradoSync_TrafficPointersList *self = (CerradoSync_TrafficPointersList *)malloc(sizeof(CerradoSync_TrafficPointersList) + 1);
   if(!private_free_interrupted(self, NULL, 0)){
     return NULL;
   }
 
   self->size_elements = 0;
-  self->semID = (TrafficPointerObject **)malloc(sizeof(TrafficPointerObject *));
+  self->semID = (CerradoSync_TrafficPointerObject **)malloc(sizeof(CerradoSync_TrafficPointerObject *));
   if(!private_free_interrupted(self->semID, (void *[]){self}, 1)){
     return NULL;
   }
@@ -73,14 +73,14 @@ TrafficPointersList *private_new_TrafficPointersList(){
   return self;
 }
 
-void private_free_traffic(TrafficMemory *self){
+void private_free_traffic(CerradoSync_TrafficMemory *self){
   if(self){
     private_close_traffic(self->trafficID);
     free(self);
   }
 }
 
-void private_free_TrafficPointerObject(TrafficPointerObject *self){
+void private_free_TrafficPointerObject(CerradoSync_TrafficPointerObject *self){
   if(self){
 
     if(self->traffic_ID != -1){
@@ -91,7 +91,7 @@ void private_free_TrafficPointerObject(TrafficPointerObject *self){
   }
 }
 
-void private_free_TrafficPointersList(TrafficPointersList *self){
+void private_free_TrafficPointersList(CerradoSync_TrafficPointersList *self){
 
   if(self){
 
