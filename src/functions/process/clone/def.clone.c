@@ -2,7 +2,6 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
-#include <sched.h>
 //silver_chain_scope_end
 
 int private_CerradoSync_processThread_config(void *arg){
