@@ -9,6 +9,8 @@ struct private_CerradoSync_ProcessStruct{
   pid_t process;
   void *stack;
   int size_stack;
+  int status_process;
+  int process_finished;
 };
 
 

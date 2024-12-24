@@ -22,15 +22,16 @@ int private_CerradoSync_callback_config(void *arg){
   return var_return;
 }
 
-int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags){
+int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int flags){
 
-  pid_t pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
+  pid_t pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
 
   if(pid_process == -1){
     return -1;
   }
 
   process->process = pid_process;
+  waitpid(process->process, &process->status_process, WNOHANG);
 
   return 1;
 

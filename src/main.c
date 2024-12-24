@@ -25,16 +25,26 @@ int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCa
 
   CerradoSync_push_memory(memory);
 
+  sleep(8);
+
   CerradoSync_signal_traffic(memory, "className", GREEN_TRAFFIC); //Sends a signal for traffic with name 'className' to be opened
 
   printf("\n\tValor novo : %s\n", (const char *)memory->memory_shared->memory);
+
+  sleep(8);
 
   return 0;
 }
 
 int main(){
 
+  int result;
+
   CerradoSync *main = new_CerradoSyncStruct("main", _DEFAULT_MAX_SIZE_MEMORY_TRAFFIC_); //create a class of process
+  if(!main){
+    printf("null");
+    return 1;
+  }
 
   CerradoSync_MemoryShared *memory = main->memory; //The memory structure that contains global memory and static memory to work with
 
@@ -45,7 +55,11 @@ int main(){
 
   printf("\n\tpai: %d\n", (int)*((int *)CerradoSync_getMemoryValue(memory))); //Get pointer of static memory value
 
-  CerradoSync_create_pointer_traffic(main, "className", RED_TRAFFIC); //Creates an initially blocked traffic point
+  result = CerradoSync_create_pointer_traffic(main, "className", RED_TRAFFIC); //Creates an initially blocked traffic point
+  if(result == -1){
+    printf("null");
+    return 1;
+  }
 
   CerradoSync_CallbackProcess *callback = CerradoSync_new_CallbackProcess(main, process_print_name);//Struct callback process
 
@@ -53,7 +67,11 @@ int main(){
   CerradoSync_ArgumentCallback *name_arg = CerradoSync_new_argument("teste", (void *)name, strlen(name));//A new argument for callback
   CerradoSync_add_argument(callback, name_arg);//Assign argument for callback
 
-  CerradoSync_create_process(main, callback, NULL); //Create a process
+  result = CerradoSync_create_process(main, callback, CERRADOSYNC_THREADPROCESS); //Create a process independent
+  if(result == -1){
+    printf("null");
+    return 1;
+  }
 
   CerradoSync_wait_traffic(memory, "className", GREEN_TRAFFIC); //Wait pointer traffic 'className' stay open
   CerradoSync_pull_memory(memory); //Get the latest information from global memory and copy it to static memory
@@ -61,12 +79,11 @@ int main(){
   printf("\n\tpai depois: %s\n", (const char *)CerradoSync_getMemoryValue(memory));
 
   printf("\n\tHello Word!\n");
-  for (int i = 0; i < main->size_process; i++) {
-    pid_t temp_process = main->process_list[i]->process;
-    int status;
-    waitpid(temp_process, &status, 0);
-    printf("\n\tstatus: %d of process: %d\n", WIFEXITED(status), i);
+  /*Process wait does not work with threads
+  if(CerradoSync_wait_class_process_ended(main) == CERRADOSYNC_ERROR_A_GET_STATUS){
+    printf("error");
   }
+  */
   printf("\n\tBye Word\n");
 
   free_CerradoSync(main);//Releases all allocated memory of the created process class

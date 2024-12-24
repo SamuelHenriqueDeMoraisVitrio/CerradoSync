@@ -5,6 +5,7 @@
 #include "../functions/hash_class/hash_to_key-t/def.sha.c"
 #include "../functions/process/clone/def.clone.c"
 #include "../functions/process/create_process/def.creat.c"
+#include "../functions/process/status/def.status.c"
 #include "../functions/share/memory/def.memory.c"
 #include "../functions/share/traffic/def.traffic.c"
 #include "../functions/structs/callback/def.callback.c"

@@ -7,7 +7,7 @@
 
 
 
-int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int flags) {
   if (getpid() != main_process->pid_father) {
       return -1;
   }
