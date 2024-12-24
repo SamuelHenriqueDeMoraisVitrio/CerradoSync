@@ -39,6 +39,14 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
   return 1;
 }
 
+int CerradoSync_commit_process(CerradoSync *self){
+  if(private_CerradoSync_signal_traffic(self->memory->memory_shared->traffic->trafficID, 1, 1) == -1){
+    return -1;
+  }
+
+  return 1;
+}
+
 
 
 

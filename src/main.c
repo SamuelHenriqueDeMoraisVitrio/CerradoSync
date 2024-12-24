@@ -2,6 +2,7 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "imports/imports.def.h"
+#include <sys/sem.h>
 //silver_chain_scope_end
 
 
@@ -25,13 +26,13 @@ int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCa
 
   CerradoSync_push_memory(memory);
 
-  sleep(8);
+  sleep(3);
 
   CerradoSync_signal_traffic(memory, "className", GREEN_TRAFFIC); //Sends a signal for traffic with name 'className' to be opened
 
   printf("\n\tValor novo : %s\n", (const char *)memory->memory_shared->memory);
 
-  sleep(8);
+  sleep(1);
 
   return 0;
 }
@@ -72,6 +73,7 @@ int main(){
     printf("null");
     return 1;
   }
+  CerradoSync_commit_process(main);
 
   CerradoSync_wait_traffic(memory, "className", GREEN_TRAFFIC); //Wait pointer traffic 'className' stay open
   CerradoSync_pull_memory(memory); //Get the latest information from global memory and copy it to static memory
@@ -85,6 +87,12 @@ int main(){
   }
   */
   printf("\n\tBye Word\n");
+
+  int current = private_CerradoSync_get_stats_traffic(main->memory->memory_shared->traffic->trafficID, 1);
+  if(current == -1){
+    printf("erro");
+  }
+  printf("\n\tcurrent: %d\n\n", current);
 
   free_CerradoSync(main);//Releases all allocated memory of the created process class
 

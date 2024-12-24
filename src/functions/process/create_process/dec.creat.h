@@ -7,4 +7,6 @@
 
 int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int flags);
 
+int CerradoSync_commit_process(CerradoSync *self);
+
 

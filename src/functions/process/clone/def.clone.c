@@ -15,8 +15,10 @@ int private_CerradoSync_callback_config(void *arg){
 
   int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
   function_callback = struct_arg->function_callback;
-  int var_return = function_callback(memory_argument_0, struct_arg->args);
 
+  private_CerradoSync_wait(memory_argument_0->memory_shared->traffic->key, 2, 1, GREEN_TRAFFIC);
+  int var_return = function_callback(memory_argument_0, struct_arg->args);
+  
   private_CerradoSync_close_memory(memory_argument_0);
 
   return var_return;

@@ -14,7 +14,6 @@ int private_CerradoSync_get_stats_traffic(int id, int index_get){
 int private_CerradoSync_init_traffic(key_t key){
 
   int sem_share = semget(key, 2, IPC_CREAT | IPC_EXCL | 0666);
-
   if(sem_share == -1){
     return sem_share;
   }
@@ -26,7 +25,7 @@ int private_CerradoSync_init_traffic(key_t key){
   if(semctl(sem_share, 1, SETVAL, 0) == -1){// The second set of traffic lights will be dedicated to the "await sync";
     return -1;
   }
-  
+
   return sem_share;
 }
 
@@ -81,7 +80,7 @@ int private_CerradoSync_wait(key_t key, int number_traffics, int index_get, int 
 
 int private_CerradoSync_signal_traffic(int id, int index_traffic, int color){
 
-  struct sembuf operation = {0, color, 0};
+  struct sembuf operation = {index_traffic, color, 0};
 
   if(semop(id, &operation, 1) == -1){
     return -1;
