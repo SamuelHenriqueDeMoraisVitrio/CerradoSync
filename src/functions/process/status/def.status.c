@@ -10,6 +10,9 @@
 int CerradoSync_wait_class_process_ended(CerradoSync *self){
   for (int i = 0; i < self->size_process; i++) {
     CerradoSync_Process *process = self->process_list[i];
+    if(process->is_a_thread){
+      continue;
+    }
     pid_t retorno = waitpid(process->process, &process->status_process, 0);
     if(retorno == -1){
       return CERRADOSYNC_ERROR_A_GET_STATUS;
@@ -23,6 +26,9 @@ int CerradoSync_class_process_ended(CerradoSync *self){
   
   for (int i = 0; i < self->size_process; i++) {
     CerradoSync_Process *process = self->process_list[i];
+    if(process->is_a_thread){
+      continue;
+    }
     pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
     if(result == 0){
       return CERRADOSYNC_PROCESS_WORKING;
@@ -42,6 +48,9 @@ int CerradoSync_wait_process_ended(CerradoSync *self, int index_process){
   }
 
   CerradoSync_Process *process = self->process_list[index_process];
+  if(process->is_a_thread){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
   pid_t result = waitpid(process->process, &process->status_process, 0);
   if(result > 0){
     if(WIFEXITED(process->status_process)){
@@ -61,6 +70,9 @@ int CerradoSync_process_ended(CerradoSync *self, int index_process){
   }
 
   CerradoSync_Process *process = self->process_list[index_process];
+  if(process->is_a_thread){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
   pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
   if(result == 0){
     return CERRADOSYNC_PROCESS_WORKING;

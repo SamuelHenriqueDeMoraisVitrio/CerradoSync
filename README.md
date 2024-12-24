@@ -6,7 +6,7 @@ The `CerradoSync` library is designed for shared memory management and process s
 
 ## Table of Contents
 
-1. [Installation](#installation)  
+1. [Inclusion](#Inclusion)
 2. [Core Structures and Functions](#core-structures-and-functions)  
 3. [Basic Example](#basic-example)  
 4. [Advanced Example](#advanced-example)  
@@ -239,7 +239,7 @@ int main(){
 | `CerradoSync_wait_traffic`          | Waits for a traffic signal to change to the specified state.                                    |
 | `CerradoSync_new_CallbackProcess`   | Creates a callback process.                                                                     |
 | `CerradoSync_new_argument`          | Creates an argument to pass to a callback.                                                      |
-| `CerradoSync_add_argument`          | Associates an argument with a callback.                                                        |
+| `CerradoSync_add_argument`          | Associates an argument with a callback.                                                         |
 | `CerradoSync_create_process`        | Spawns a new child process linked to a callback.                                                |
 
 ---

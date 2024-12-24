@@ -11,6 +11,7 @@ struct private_CerradoSync_ProcessStruct{
   int size_stack;
   int status_process;
   int process_finished;
+  int is_a_thread;
 };
 
 

@@ -2,6 +2,7 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "../../../imports/imports.dec.h"
+#include <sched.h>
 //silver_chain_scope_end
 
 
@@ -20,6 +21,8 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
   if(!new_process){
     return -1;
   }
+
+  new_process->is_a_thread = (flags & CLONE_THREAD)?1:0;
 
   private_CerradoSync_clone_process(new_process, callback, flags);
   if(new_process->process == -1){

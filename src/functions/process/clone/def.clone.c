@@ -46,10 +46,14 @@ int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_
   pid_t pid_process = -1;
   if(flags & CLONE_VM){
     pid_process = clone(private_CerradoSync_processThread_config, process->stack + process->size_stack - 1, flags, callback);
-  }else{
-    pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
-  }
+    if(pid_process == -1){
+      return -1;
+    }
 
+    return 1;
+  }
+  
+  pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
 
   if(pid_process == -1){
     return -1;

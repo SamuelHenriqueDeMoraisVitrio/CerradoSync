@@ -92,11 +92,9 @@ int main(){
 
   printf("\n\tHello Word!\n");
   CerradoSync_wait_traffic(memory, "endFunc", GREEN_TRAFFIC);
-  /*Process wait does not work with threads
-  if(CerradoSync_wait_class_process_ended(main) == CERRADOSYNC_ERROR_A_GET_STATUS){
+  if(CerradoSync_wait_class_process_ended(main) == CERRADOSYNC_ERROR_A_GET_STATUS){//This functionality does not work for threads with shared pid
     printf("error");
   }
-  */
   printf("\n\tBye Word\n");
 
   int current = private_CerradoSync_get_stats_traffic(main->memory->memory_shared->traffic->trafficID, 1);
