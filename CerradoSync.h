@@ -556,6 +556,7 @@ struct private_CerradoSync_ProcessStruct{
   int size_stack;
   int status_process;
   int process_finished;
+  int is_a_thread;
 };
 
 
@@ -957,7 +958,6 @@ key_t private_CerradoSync_get_key(const char *key){
 //silver_chain_scope_start
 //mannaged by silver chain
 
-#include <sched.h>
 //silver_chain_scope_end
 
 int private_CerradoSync_processThread_config(void *arg){
@@ -1002,10 +1002,14 @@ int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_
   pid_t pid_process = -1;
   if(flags & CLONE_VM){
     pid_process = clone(private_CerradoSync_processThread_config, process->stack + process->size_stack - 1, flags, callback);
-  }else{
-    pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
-  }
+    if(pid_process == -1){
+      return -1;
+    }
 
+    return 1;
+  }
+  
+  pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
 
   if(pid_process == -1){
     return -1;
@@ -1026,6 +1030,7 @@ int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_
 //silver_chain_scope_start
 //mannaged by silver chain
 
+#include <sched.h>
 //silver_chain_scope_end
 
 
@@ -1044,6 +1049,8 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
   if(!new_process){
     return -1;
   }
+
+  new_process->is_a_thread = (flags & CLONE_THREAD)?1:0;
 
   private_CerradoSync_clone_process(new_process, callback, flags);
   if(new_process->process == -1){
@@ -1087,6 +1094,9 @@ int CerradoSync_commit_process(CerradoSync *self){
 int CerradoSync_wait_class_process_ended(CerradoSync *self){
   for (int i = 0; i < self->size_process; i++) {
     CerradoSync_Process *process = self->process_list[i];
+    if(process->is_a_thread){
+      continue;
+    }
     pid_t retorno = waitpid(process->process, &process->status_process, 0);
     if(retorno == -1){
       return CERRADOSYNC_ERROR_A_GET_STATUS;
@@ -1100,6 +1110,9 @@ int CerradoSync_class_process_ended(CerradoSync *self){
   
   for (int i = 0; i < self->size_process; i++) {
     CerradoSync_Process *process = self->process_list[i];
+    if(process->is_a_thread){
+      continue;
+    }
     pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
     if(result == 0){
       return CERRADOSYNC_PROCESS_WORKING;
@@ -1119,6 +1132,9 @@ int CerradoSync_wait_process_ended(CerradoSync *self, int index_process){
   }
 
   CerradoSync_Process *process = self->process_list[index_process];
+  if(process->is_a_thread){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
   pid_t result = waitpid(process->process, &process->status_process, 0);
   if(result > 0){
     if(WIFEXITED(process->status_process)){
@@ -1138,6 +1154,9 @@ int CerradoSync_process_ended(CerradoSync *self, int index_process){
   }
 
   CerradoSync_Process *process = self->process_list[index_process];
+  if(process->is_a_thread){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
   pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
   if(result == 0){
     return CERRADOSYNC_PROCESS_WORKING;
