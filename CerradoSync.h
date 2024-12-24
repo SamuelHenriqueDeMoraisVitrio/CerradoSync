@@ -403,14 +403,26 @@ void calc_sha_256(uint8_t hash[SIZE_OF_SHA_256_HASH], const void *input, size_t 
 #define GREEN_TRAFFIC 1
 #define RED_TRAFFIC 0
 
-#define CerradoSync_IndependentProcess SIGCHLD
-#define CerradoSync_ThreadProcess NULL
-#define CerradoSync_Container NULL
+#define CERRADOSYNC_INDEPENDENTPROCESS SIGCHLD
+#define CERRADOSYNC_THREADPROCESS CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD
+#define CERRADOSYNC_CONTAINER NULL
 
 
 
 
 
+
+
+//silver_chain_scope_start
+//mannaged by silver chain
+
+//silver_chain_scope_end
+
+//result process:
+#define CERRADOSYNC_PROCESS_FINISHED_IN_ERROR -4
+#define CERRADOSYNC_ERROR_A_GET_STATUS -3
+#define CERRADOSYNC_PROCESS_NOT_EXIST -2
+#define CERRADOSYNC_PROCESS_WORKING -1
 
 #endif
 
@@ -543,6 +555,7 @@ struct private_CerradoSync_ProcessStruct{
   void *stack;
   int size_stack;
   int status_process;
+  int process_finished;
 };
 
 
@@ -653,7 +666,7 @@ key_t private_CerradoSync_get_key(const char *key);
 
 
 
-int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags);
+int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int flags);
 
 
 
@@ -665,7 +678,9 @@ int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_
 //silver_chain_scope_end
 
 
-int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags);
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int flags);
+
+int CerradoSync_commit_process(CerradoSync *self);
 
 
 
@@ -674,6 +689,21 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
 //mannaged by silver chain
 
 //silver_chain_scope_end
+
+
+
+
+int CerradoSync_wait_class_process_ended(CerradoSync *self);
+
+int CerradoSync_class_process_ended(CerradoSync *self);
+
+int CerradoSync_wait_process_ended(CerradoSync *self, int index_process);
+
+int CerradoSync_process_ended(CerradoSync *self, int index_process);
+
+
+
+
 
 
 //silver_chain_scope_start
@@ -927,7 +957,25 @@ key_t private_CerradoSync_get_key(const char *key){
 //silver_chain_scope_start
 //mannaged by silver chain
 
+#include <sched.h>
 //silver_chain_scope_end
+
+int private_CerradoSync_processThread_config(void *arg){
+
+  CerradoSync_CallbackProcess *struct_arg = (CerradoSync_CallbackProcess *)arg;
+
+  CerradoSync_MemoryShared *memory_argument_0 = (CerradoSync_MemoryShared *)struct_arg->memory;
+
+  CerradoSync_pull_memory(memory_argument_0);
+
+  int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
+  function_callback = struct_arg->function_callback;
+
+  private_CerradoSync_wait(memory_argument_0->memory_shared->traffic->key, 2, 1, GREEN_TRAFFIC);
+  int var_return = function_callback(memory_argument_0, struct_arg->args);
+  
+  return var_return;
+}
 
 int private_CerradoSync_callback_config(void *arg){
 
@@ -940,16 +988,24 @@ int private_CerradoSync_callback_config(void *arg){
 
   int(*function_callback)(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *arguments);
   function_callback = struct_arg->function_callback;
-  int var_return = function_callback(memory_argument_0, struct_arg->args);
 
+  private_CerradoSync_wait(memory_argument_0->memory_shared->traffic->key, 2, 1, GREEN_TRAFFIC);
+  int var_return = function_callback(memory_argument_0, struct_arg->args);
+  
   private_CerradoSync_close_memory(memory_argument_0);
 
   return var_return;
 }
 
-int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int *flags){
+int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_CallbackProcess *callback, int flags){
 
-  pid_t pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags?*flags:SIGCHLD, callback);
+  pid_t pid_process = -1;
+  if(flags & CLONE_VM){
+    pid_process = clone(private_CerradoSync_processThread_config, process->stack + process->size_stack - 1, flags, callback);
+  }else{
+    pid_process = clone(private_CerradoSync_callback_config, process->stack + process->size_stack - 1, flags, callback);
+  }
+
 
   if(pid_process == -1){
     return -1;
@@ -975,7 +1031,7 @@ int private_CerradoSync_clone_process(CerradoSync_Process *process, CerradoSync_
 
 
 
-int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int *flags) {
+int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackProcess *callback, int flags) {
   if (getpid() != main_process->pid_father) {
       return -1;
   }
@@ -1007,6 +1063,14 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
   return 1;
 }
 
+int CerradoSync_commit_process(CerradoSync *self){
+  if(private_CerradoSync_signal_traffic(self->memory->memory_shared->traffic->trafficID, 1, 1) == -1){
+    return -1;
+  }
+
+  return 1;
+}
+
 
 
 
@@ -1016,6 +1080,79 @@ int CerradoSync_create_process(CerradoSync *main_process, CerradoSync_CallbackPr
 //mannaged by silver chain
 
 //silver_chain_scope_end
+
+
+
+
+int CerradoSync_wait_class_process_ended(CerradoSync *self){
+  for (int i = 0; i < self->size_process; i++) {
+    CerradoSync_Process *process = self->process_list[i];
+    pid_t retorno = waitpid(process->process, &process->status_process, 0);
+    if(retorno == -1){
+      return CERRADOSYNC_ERROR_A_GET_STATUS;
+    }
+  }
+
+  return 1;
+}
+
+int CerradoSync_class_process_ended(CerradoSync *self){
+  
+  for (int i = 0; i < self->size_process; i++) {
+    CerradoSync_Process *process = self->process_list[i];
+    pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
+    if(result == 0){
+      return CERRADOSYNC_PROCESS_WORKING;
+    }
+    if(result == -1){
+      return CERRADOSYNC_ERROR_A_GET_STATUS;
+    }
+  }
+
+  return 1;
+}
+
+int CerradoSync_wait_process_ended(CerradoSync *self, int index_process){
+
+  if(index_process < 0 || index_process >= self->size_process){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
+
+  CerradoSync_Process *process = self->process_list[index_process];
+  pid_t result = waitpid(process->process, &process->status_process, 0);
+  if(result > 0){
+    if(WIFEXITED(process->status_process)){
+      return WEXITSTATUS(process->status_process);
+    }
+    return CERRADOSYNC_PROCESS_FINISHED_IN_ERROR;
+  }
+
+  return CERRADOSYNC_ERROR_A_GET_STATUS;
+  
+}
+
+int CerradoSync_process_ended(CerradoSync *self, int index_process){
+  
+  if(!self->process_list[index_process]){
+    return CERRADOSYNC_PROCESS_NOT_EXIST;
+  }
+
+  CerradoSync_Process *process = self->process_list[index_process];
+  pid_t result = waitpid(process->process, &process->status_process, WNOHANG);
+  if(result == 0){
+    return CERRADOSYNC_PROCESS_WORKING;
+  }
+  if(result > 0){
+    if(WIFEXITED(process->status_process)){
+      return WEXITSTATUS(process->status_process);
+    }
+    return CERRADOSYNC_PROCESS_FINISHED_IN_ERROR;
+  }
+
+  return CERRADOSYNC_ERROR_A_GET_STATUS;
+}
+
+
 
 
 //silver_chain_scope_start
@@ -1120,7 +1257,6 @@ int private_CerradoSync_get_stats_traffic(int id, int index_get){
 int private_CerradoSync_init_traffic(key_t key){
 
   int sem_share = semget(key, 2, IPC_CREAT | IPC_EXCL | 0666);
-
   if(sem_share == -1){
     return sem_share;
   }
@@ -1132,7 +1268,7 @@ int private_CerradoSync_init_traffic(key_t key){
   if(semctl(sem_share, 1, SETVAL, 0) == -1){// The second set of traffic lights will be dedicated to the "await sync";
     return -1;
   }
-  
+
   return sem_share;
 }
 
@@ -1187,7 +1323,7 @@ int private_CerradoSync_wait(key_t key, int number_traffics, int index_get, int 
 
 int private_CerradoSync_signal_traffic(int id, int index_traffic, int color){
 
-  struct sembuf operation = {0, color, 0};
+  struct sembuf operation = {index_traffic, color, 0};
 
   if(semop(id, &operation, 1) == -1){
     return -1;

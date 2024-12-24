@@ -2,10 +2,17 @@
 //silver_chain_scope_start
 //mannaged by silver chain
 #include "imports/imports.def.h"
-#include <sys/sem.h>
+#include <unistd.h>
 //silver_chain_scope_end
 
 
+void sleep_and_print(int temp){
+  printf("\n");
+  for(int i=0; i < temp; i++){
+    printf("\tsleep: %d\n", i + 1);
+    sleep(1);
+  }
+}
 
 int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCallback *args){
 
@@ -26,14 +33,13 @@ int process_print_name(CerradoSync_MemoryShared *memory, CerradoSync_ArgumentsCa
 
   CerradoSync_push_memory(memory);
 
-  sleep(3);
+  sleep_and_print(3);
 
   CerradoSync_signal_traffic(memory, "className", GREEN_TRAFFIC); //Sends a signal for traffic with name 'className' to be opened
 
   printf("\n\tValor novo : %s\n", (const char *)memory->memory_shared->memory);
 
-  sleep(1);
-
+  CerradoSync_signal_traffic(memory, "endFunc", GREEN_TRAFFIC);
   return 0;
 }
 
@@ -56,6 +62,7 @@ int main(){
 
   printf("\n\tpai: %d\n", (int)*((int *)CerradoSync_getMemoryValue(memory))); //Get pointer of static memory value
 
+  CerradoSync_create_pointer_traffic(main, "endFunc", RED_TRAFFIC);
   result = CerradoSync_create_pointer_traffic(main, "className", RED_TRAFFIC); //Creates an initially blocked traffic point
   if(result == -1){
     printf("null");
@@ -73,14 +80,18 @@ int main(){
     printf("null");
     return 1;
   }
+  
+  sleep_and_print(2);
   CerradoSync_commit_process(main);
 
   CerradoSync_wait_traffic(memory, "className", GREEN_TRAFFIC); //Wait pointer traffic 'className' stay open
+  sleep_and_print(5);
   CerradoSync_pull_memory(memory); //Get the latest information from global memory and copy it to static memory
 
   printf("\n\tpai depois: %s\n", (const char *)CerradoSync_getMemoryValue(memory));
 
   printf("\n\tHello Word!\n");
+  CerradoSync_wait_traffic(memory, "endFunc", GREEN_TRAFFIC);
   /*Process wait does not work with threads
   if(CerradoSync_wait_class_process_ended(main) == CERRADOSYNC_ERROR_A_GET_STATUS){
     printf("error");
