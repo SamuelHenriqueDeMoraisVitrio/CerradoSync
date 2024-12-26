@@ -19,7 +19,7 @@ local function imports()
   silverchain.generate({
       src = "src",
       project_short_cut = "CerradoSync",
-      tags = { "imp", "dep",  "mac", "types", "const", "globals", "dec", "def" },
+      tags = { "inp", "dep",  "mac", "types", "const", "globals", "dec", "def" },
       implement_main=true,
       main_name="main.c"
   })

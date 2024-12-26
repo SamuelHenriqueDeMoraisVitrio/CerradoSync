@@ -1,7 +1,7 @@
 
 //silver_chain_scope_start
 //mannaged by silver chain
-#include "../imports/imports.imp.h"
+#include "../imports/imports.inp.h"
 //silver_chain_scope_end
 
 #ifndef SHA_256_H
